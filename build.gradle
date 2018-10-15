@@ -1,0 +1,184 @@
+plugins {
+    id 'java'
+}
+
+group 'com.voc'
+version '1.0'
+
+ext {
+
+    profile = System.getProperty("env", "dev")
+    logger.lifecycle("当前环境：{}", profile)
+
+    rep = "company"
+    mavenHome = 'D:/Software/Maven/repository'
+    ver = '9.0'
+
+    junitVersion = '4.12'
+    aspectjrtVersion = '1.8.13'
+    slf4jVersion = '1.7.25'
+    groovyVersion = '2.4.12'
+    logbackVersion = '1.2.3'
+    fastjsonVersion = '1.2.44'
+    classPathPrefix = 'lib'
+    addClassPath = true
+
+//    if (ver == '9.0') {
+//        frVersion = '9.0-2018.07.04.16.54.35.528'
+////        frVersion = '9.0-2017.11.16.18.35.04.539'
+////        frVersion = '9.0-2017.12.21.15.09.44.250'
+//    } else {
+//        frVersion = '8.0-2017.12.21.15.32.20.344'
+//    }
+
+    if (rep == "company") {
+        nexusUrl = 'http://192.168.44.155'
+        nexusPublicRepository = 'nexus/content/groups/public/'
+        nexusReleaseRepository = 'nexus/content/repositories/releases/'
+        nexusReleaseUserName = 'admin'
+        nexusReleasePassword = 'admin123'
+        nexusSnapshotRepository = 'nexus/content/repositories/snapshots/'
+        nexusSnapshotUserName = 'admin'
+        nexusSnapshotPassword = 'admin123'
+    } else {
+        nexusUrl = 'http://localhost:8081'
+        nexusPublicRepository = 'repository/maven-public/'
+        nexusReleaseRepository = 'repository/maven-releases/'
+        nexusReleaseUserName = 'admin'
+        nexusReleasePassword = 'admin123'
+        nexusSnapshotRepository = 'repository/maven-snapshots/'
+        nexusSnapshotUserName = 'admin'
+        nexusSnapshotPassword = 'admin123'
+    }
+
+}
+
+sourceCompatibility = 1.8
+
+repositories {
+    maven { url "file://${mavenHome}" }
+    maven { url "${nexusUrl}/${nexusPublicRepository}" }
+    maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+    maven { url "http://repo.maven.apache.org/maven2/" }
+}
+
+dependencies {
+    compile "com.voc:fr-server:9.0.0-RELEASE"
+    compile "ch.qos.logback:logback-classic:1.2.3"
+    compile "org.slf4j:slf4j-api:${slf4jVersion}"
+    compile "com.alibaba:fastjson:1.2.44"
+    compile "commons-io:commons-io:2.6"
+    compile "com.corundumstudio.socketio:netty-socketio:1.7.14"
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.4'
+    compile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
+    compile group: 'org.apache.pdfbox', name: 'pdfbox-app', version: '2.0.12'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compileOnly 'org.projectlombok:lombok:1.16.22'
+    compileOnly "com.voc:fr-designer:9.0.0-RELEASE"
+}
+
+/*Jar 包含文件*/
+def includeFiles = {
+    boolean isIncludeClassPathFile ->
+        def arr = [
+
+        ]
+        if (isIncludeClassPathFile) {
+            arr.addAll([
+
+            ])
+        }
+        return arr
+}
+def manifestAttr = [
+        'Built-By'  : "coffee377",
+        'Build-Jdk' : System.getProperty('java.version'),
+        'Main-Class': 'com.voc.print.plus.PrintClient'
+]
+
+/*打Jar包*/
+def packJar = {
+    boolean isAddClassPath,
+    Map<String, Object> manifestAttributes ->
+        if (isAddClassPath && !configurations.compile.isEmpty()) {
+            jar.manifest.attributes('Class-Path': configurations.compile.collect {
+                "${classPathPrefix}/${it.name}"
+            }.join(' '))
+        }
+        jar.manifest.attributes manifestAttributes
+        jar.include(includeFiles(false))
+        jar.includeEmptyDirs = false
+}
+
+packJar(Boolean.parseBoolean("${addClassPath}"), manifestAttr)
+
+/*拷贝 Classpath 依赖包*/
+task copyClassPathJars(type: Copy) {
+    from(configurations.compile)
+    into(buildDir.name + "/dist/${classPathPrefix}")
+}
+
+task copyJars(type: Copy) {
+    from(buildDir.name + '/libs')
+    into(buildDir.name + '/dist/bin')
+    rename { 'PrintPlus.jar' }
+}
+/*拷贝项目生成的Jar包*/
+copyJars.dependsOn(assemble)
+
+/*拷贝zip压缩文件*/
+task copyZipResource() {
+    doLast {
+        copy {
+            from(projectDir) {
+                include(
+//                        'README.MD',
+                        'PrintPlus.ico',
+                        'PrintPlus.png'
+                )
+            }
+            into("build/dist")
+        }
+//        copy {
+//            from("$projectDir/bin") {
+//                include('startup.bat')
+//            }
+//            into("build/dist/bin")
+//        }
+        copy {
+            from("$projectDir/config") {
+//                include('startup.bat')
+            }
+            into("build/dist/config")
+        }
+        copy {
+            from("$projectDir/src/main/resources/com/voc/print/plus/js") {
+                include('print.min.js')
+            }
+            into("build/dist/js")
+            rename('print.min.js', 'print.js')
+        }
+    }
+}
+
+copyZipResource.dependsOn(clean, copyJars, copyClassPathJars)
+
+/*创建ZIP归档文件，默认压缩文件类型为zip*/
+task zipTask(type: Zip) {
+    from(buildDir.name + '/dist') {
+        include("**")
+    }
+    destinationDir file('dist')
+//    baseName 'plugin'
+//    appendix 'com.fr.plugin.print.plus'
+//    version '2.0.0'
+//    archiveName = "${baseName}-${appendix}-${version}.${extension}"
+}
+
+zipTask.dependsOn(copyZipResource)
+
+clean {
+    file("out").deleteDir()
+//        file("dist").deleteDir()
+}
+

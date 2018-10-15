@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" debug="false">
+    <!-- 定义参数 -->
+    <!-- 日志输出级别 TRACE < DEBUG < INFO < WARN < ERROR -->
+    <property name="log.level" value="INFO"/>
+    <property name="log.root.level" value="WARN"/>
+    <property name="log.filePath" value="../logs"/>
+    <property name="log.fileNamePattern" value="yyyyMM"/>
+    <property name="log.charSet" value="UTF-8"/>
+    <property name="log.maxHistory" value="90"/>
+    <property name="log.maxFileSize" value="100MB"/>
+    <property name="log.totalSizeCap" value="20GB"/>
+    <property name="log.pattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"/>
+
+    <!-- 控制台输出 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+            <pattern>${log.pattern}</pattern>
+            <charset>${log.charSet}</charset>
+        </encoder>
+        <target>system.out</target>
+    </appender>
+
+    <!-- 滚动日志文件输出 -->
+    <appender name="fileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 配置日志所生成的目录以及生成文件名的规则 -->
+            <FileNamePattern>${log.filePath}/print_log_%d{${log.fileNamePattern}}_%i.log</FileNamePattern>
+            <!-- 每个文件最多100MB，保留60天的历史，但最多20GB -->
+            <maxFileSize>${log.maxFileSize}</maxFileSize>
+            <maxHistory>${log.maxHistory}</maxHistory>
+            <totalSizeCap>${log.totalSizeCap}</totalSizeCap>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${log.pattern}</pattern>
+            <charset>${log.charSet}</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!--<level>DEBUG</level>-->
+            <!--<onMatch>ACCEPT</onMatch>-->
+            <!--<onMismatch>DENY</onMismatch>-->
+        </filter>
+    </appender>
+    　
+    <logger name="com.fr" level="INFO" additivity="false">
+        <appender-ref ref="fileAppender"/>
+    </logger>
+
+    <!-- 控制台日志输出级别 TRACE < DEBUG < INFO < WARN < ERROR -->
+    <root level="WARN">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="fileAppender"/>
+    </root>
+    　　　　　　
+    　　　　　　　
+</configuration>

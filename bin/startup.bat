@@ -1,0 +1,1 @@
+..\jre\bin\java -Xms512m -Xmx1024m -cp ../lib/* -jar PrintPlus.jar
