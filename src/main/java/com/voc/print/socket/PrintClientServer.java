@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
+import java.util.regex.Pattern;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
 
@@ -115,6 +116,10 @@ public class PrintClientServer {
         String[] printerNameArray = GeneralUtils.getSystemPrinterNameArray();
         JSONObject clientData = JSONObject.create();
         JSONArray printers = new JSONArray(new ArrayList());
+//        Pattern compile = Pattern.compile("nginx.serverURL.pattern");
+//        if (compile.matcher("").matches()) {
+//
+//        }
         int var7 = 0;
 
         int var8;

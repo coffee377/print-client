@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <install4j version="6.1.2" transformSequenceNumber="5">
-  <directoryPresets config="./build/dist" />
-  <application name="Print Plus" distributionSourceDir="" applicationId="1141-8780-9806-1482" mediaDir="./dist/instal4j6" mediaFilePattern="${compiler:sys.fullName}_${compiler:sys.platform}_${compiler:sys.version}" compression="6" lzmaCompression="false" pack200Compression="false" excludeSignedFromPacking="true" commonExternalFiles="false" createMd5Sums="true" shrinkRuntime="true" shortName="PrintX" publisher="" publisherWeb="" version="1.0.0" allPathsRelative="true" backupOnSave="false" autoSave="false" convertDotsToUnderscores="true" macSignature="????" macVolumeId="99c2b524d18361a5" javaMinVersion="1.8" javaMaxVersion="1.8" allowBetaVM="false" jdkMode="jdk" jdkName="">
+  <directoryPresets config="../build/dist" />
+  <application name="Print Plus" distributionSourceDir="" applicationId="1141-8780-9806-1482" mediaDir="../dist/instal4j6/${compiler:sys.version}" mediaFilePattern="${compiler:sys.fullName}_${compiler:sys.platform}_${compiler:sys.version}" compression="6" lzmaCompression="false" pack200Compression="false" excludeSignedFromPacking="true" commonExternalFiles="false" createMd5Sums="true" shrinkRuntime="true" shortName="PrintX" publisher="" publisherWeb="" version="1.0.1" allPathsRelative="true" backupOnSave="false" autoSave="false" convertDotsToUnderscores="true" macSignature="????" macVolumeId="99c2b524d18361a5" javaMinVersion="1.8" javaMaxVersion="1.8" allowBetaVM="false" jdkMode="runtimeJre" jdkName="">
     <languages skipLanguageSelection="false" languageSelectionInPrincipalLanguage="false">
-      <principalLanguage id="zh_CN" customLocalizationFile="" />
+      <principalLanguage id="zh_CN" customLocalizationFile="../src/main/resources/com/voc/print/plus/locale/message_zh_CN.properties" />
       <additionalLanguages>
-        <language id="zh_TW" customLocalizationFile="" />
-        <language id="en" customLocalizationFile="" />
+        <language id="zh_TW" customLocalizationFile="../src/main/resources/com/voc/print/plus/locale/message_zh_TW.properties" />
+        <language id="en" customLocalizationFile="../src/main/resources/com/voc/print/plus/locale/message_en_US.properties" />
       </additionalLanguages>
     </languages>
     <searchSequence>
@@ -14,7 +14,9 @@
       <envVar name="JAVA_HOME" />
       <envVar name="JDK_HOME" />
     </searchSequence>
-    <variables />
+    <variables>
+      <variable name="configFile" value="config/PrintPlus.json" description="" category="" />
+    </variables>
     <mergedProjects />
     <codeSigning macEnabled="false" macPkcs12File="" windowsEnabled="false" windowsKeySource="pkcs12" windowsPvkFile="" windowsSpcFile="" windowsPkcs12File="" />
   </application>
@@ -24,20 +26,22 @@
     <mountPoints>
       <mountPoint id="22" root="" location="lib" mode="755" />
       <mountPoint id="23" root="" location="bin" mode="755" />
-      <mountPoint id="42" root="" location="config" mode="755" />
+      <mountPoint id="149" root="" location="config" mode="755" />
       <mountPoint id="24" root="" location="" mode="755" />
     </mountPoints>
     <entries>
-      <dirEntry mountPoint="22" file="./build/dist/lib" overwriteMode="4" shared="false" fileMode="644" uninstallMode="0" overrideFileMode="false" overrideOverwriteMode="false" overrideUninstallMode="false" entryMode="direct" subDirectory="lib" excludeSuffixes="" dirMode="755" overrideDirMode="false">
+      <dirEntry mountPoint="22" file="../build/dist/lib" overwriteMode="4" shared="false" fileMode="644" uninstallMode="0" overrideFileMode="false" overrideOverwriteMode="false" overrideUninstallMode="false" entryMode="direct" subDirectory="lib" excludeSuffixes="" dirMode="755" overrideDirMode="false">
         <exclude />
       </dirEntry>
-      <dirEntry mountPoint="23" file="./build/dist/bin" overwriteMode="4" shared="false" fileMode="644" uninstallMode="0" overrideFileMode="false" overrideOverwriteMode="false" overrideUninstallMode="false" entryMode="direct" subDirectory="bin" excludeSuffixes="" dirMode="755" overrideDirMode="false">
+      <dirEntry mountPoint="23" file="../build/dist/bin" overwriteMode="4" shared="false" fileMode="644" uninstallMode="0" overrideFileMode="false" overrideOverwriteMode="false" overrideUninstallMode="false" entryMode="direct" subDirectory="bin" excludeSuffixes="" dirMode="755" overrideDirMode="false">
         <exclude />
       </dirEntry>
-      <dirEntry mountPoint="42" file="./build/dist/config" overwriteMode="4" shared="false" fileMode="644" uninstallMode="0" overrideFileMode="false" overrideOverwriteMode="false" overrideUninstallMode="false" entryMode="direct" subDirectory="config" excludeSuffixes="" dirMode="755" overrideDirMode="false">
-        <exclude />
+      <dirEntry mountPoint="149" file="../build/dist/config" overwriteMode="4" shared="false" fileMode="644" uninstallMode="0" overrideFileMode="false" overrideOverwriteMode="false" overrideUninstallMode="false" entryMode="direct" subDirectory="config" excludeSuffixes="" dirMode="755" overrideDirMode="false">
+        <exclude>
+          <entry location="install4j6.install4j" fileType="regular" />
+        </exclude>
       </dirEntry>
-      <dirEntry mountPoint="24" file="./build/dist" overwriteMode="4" shared="false" fileMode="644" uninstallMode="0" overrideFileMode="false" overrideOverwriteMode="false" overrideUninstallMode="false" entryMode="direct" subDirectory="dist" excludeSuffixes="" dirMode="755" overrideDirMode="false">
+      <dirEntry mountPoint="24" file="../build/dist" overwriteMode="4" shared="false" fileMode="644" uninstallMode="0" overrideFileMode="false" overrideOverwriteMode="false" overrideUninstallMode="false" entryMode="direct" subDirectory="dist" excludeSuffixes="" dirMode="755" overrideDirMode="false">
         <exclude>
           <entry location="bin" fileType="regular" />
           <entry location="config" fileType="regular" />
@@ -49,8 +53,8 @@
     <components />
   </files>
   <launchers>
-    <launcher name="${compiler:sys.fullName}" id="25" customizedId="" external="false" excludeFromMenu="false" unixMode="755" menuName="" icnsFile="./PrintPlus.icns" customMacBundleIdentifier="false" macBundleIdentifier="" swtApp="false" fileset="" macBundleBinary="JavaApplicationStub" addMacEntitlements="false" macEntitlementsFile="" useCustomMacosExecutableName="false" customMacosExecutableName="" useJavaMinVersionOverride="false" javaMinVersionOverride="" useJavaMaxVersionOverride="false" javaMaxVersionOverride="">
-      <executable name="PrintPlus" type="1" iconSet="true" iconFile="./PrintPlus.ico" executableDir="bin" redirectStderr="true" stderrFile="error.log" stderrMode="overwrite" redirectStdout="false" stdoutFile="output.log" stdoutMode="overwrite" failOnStderrOutput="true" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" checkConsoleParameter="false" globalSingleInstance="false" singleInstanceActivate="true" dpiAware="false">
+    <launcher name="${compiler:sys.fullName}" id="25" customizedId="" external="false" excludeFromMenu="false" unixMode="755" menuName="" icnsFile="../PrintPlus.icns" customMacBundleIdentifier="false" macBundleIdentifier="" swtApp="false" fileset="" macBundleBinary="JavaApplicationStub" addMacEntitlements="false" macEntitlementsFile="" useCustomMacosExecutableName="false" customMacosExecutableName="" useJavaMinVersionOverride="false" javaMinVersionOverride="" useJavaMaxVersionOverride="false" javaMaxVersionOverride="">
+      <executable name="PrintPlus" type="1" iconSet="true" iconFile="../PrintPlus.ico" executableDir="bin" redirectStderr="true" stderrFile="error.log" stderrMode="overwrite" redirectStdout="false" stdoutFile="output.log" stdoutMode="overwrite" failOnStderrOutput="true" executableMode="1" changeWorkingDirectory="false" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" checkConsoleParameter="false" globalSingleInstance="false" singleInstanceActivate="true" dpiAware="false">
         <versionInfo include="false" fileVersion="" fileDescription="" legalCopyright="" internalName="" productName="" />
       </executable>
       <splashScreen show="false" width="0" height="0" bitmapFile="" windowsNative="false" textOverlay="false">
@@ -83,13 +87,16 @@
   </launchers>
   <installerGui installerType="1" addOnAppId="" suggestPreviousLocations="false" autoUpdateDescriptorUrl="" useAutoUpdateBaseUrl="false" autoUpdateBaseUrl="">
     <staticMembers script="" />
-    <customCode />
+    <customCode>
+      <archive location="../build/dist/bin/PrintPlus.jar" />
+      <scanDirectory location="../build/dist/lib" />
+    </customCode>
     <autoUpdate useMinUpdatableVersion="false" minUpdatableVersion="" useMaxUpdatableVersion="false" maxUpdatableVersion="">
       <commentFiles />
       <customAttributes />
     </autoUpdate>
     <applications>
-      <application name="" id="installer" customizedId="" beanClass="com.install4j.runtime.beans.applications.InstallerApplication" enabled="true" commentSet="false" comment="" actionElevationType="none" fileset="" customIcnsFile="./PrintPlus.icns" customIcoFile="./PrintPlus.ico" macEntitlementsFile="" automaticLauncherIntegration="false" launchMode="startupFirstWindow" launchInNewProcess="false" launchSchedule="updateSchedule" allLaunchers="true">
+      <application name="" id="installer" customizedId="" beanClass="com.install4j.runtime.beans.applications.InstallerApplication" enabled="true" commentSet="false" comment="" actionElevationType="none" fileset="" customIcnsFile="../PrintPlus.icns" customIcoFile="../PrintPlus.ico" macEntitlementsFile="" automaticLauncherIntegration="false" launchMode="startupFirstWindow" launchInNewProcess="false" launchSchedule="updateSchedule" allLaunchers="true">
         <serializedBean>
           <java class="java.beans.XMLDecoder">
             <object class="com.install4j.runtime.beans.applications.InstallerApplication">
@@ -247,6 +254,123 @@
                 <initScript />
                 <visibilityScript />
               </formComponent>
+              <group name="" id="97" customizedId="" beanClass="com.install4j.runtime.beans.groups.HorizontalFormComponentGroup" enabled="true" commentSet="true" comment="" actionElevationType="inherit">
+                <serializedBean>
+                  <java class="java.beans.XMLDecoder">
+                    <object class="com.install4j.runtime.beans.groups.HorizontalFormComponentGroup">
+                      <void property="makeSameHeight">
+                        <boolean>true</boolean>
+                      </void>
+                    </object>
+                  </java>
+                </serializedBean>
+                <beans>
+                  <formComponent name="nginxProxy" id="100" customizedId="" beanClass="com.install4j.runtime.beans.formcomponents.CheckboxComponent" enabled="true" commentSet="true" comment="" insetTop="" insetLeft="" insetBottom="" insetRight="" resetInitOnPrevious="false">
+                    <serializedBean>
+                      <java class="java.beans.XMLDecoder">
+                        <object class="com.install4j.runtime.beans.formcomponents.CheckboxComponent" id="CheckboxComponent0">
+                          <void property="checkboxText">
+                            <string>${i18n:nginx.proxy.name}</string>
+                          </void>
+                          <void property="coupledComponentIds">
+                            <void method="add">
+                              <string>103</string>
+                            </void>
+                          </void>
+                          <void property="helpText">
+                            <string>${i18n:nginx.proxy.helpText}</string>
+                          </void>
+                          <void property="selectionScript">
+                            <object class="com.install4j.api.beans.ScriptProperty">
+                              <void property="value">
+                                <string>context.setVariable("proxy",selected);</string>
+                              </void>
+                            </object>
+                          </void>
+                          <void property="variableName">
+                            <string>proxy</string>
+                          </void>
+                        </object>
+                      </java>
+                    </serializedBean>
+                    <initScript />
+                    <visibilityScript />
+                  </formComponent>
+                  <formComponent name="serverURL" id="103" customizedId="" beanClass="com.install4j.runtime.beans.formcomponents.TextfieldComponent" enabled="true" commentSet="false" comment="" insetTop="" insetLeft="" insetBottom="" insetRight="" resetInitOnPrevious="false">
+                    <serializedBean>
+                      <java class="java.beans.XMLDecoder">
+                        <object class="com.install4j.runtime.beans.formcomponents.TextfieldComponent">
+                          <void property="checkIfEmpty">
+                            <boolean>true</boolean>
+                          </void>
+                          <void property="helpText">
+                            <string>${i18n:nginx.serverURL.helpText}</string>
+                          </void>
+                          <void property="initialText">
+                            <string>http://192.168.88.235:80</string>
+                          </void>
+                          <void property="inputVerifier">
+                            <object class="com.install4j.api.beans.ScriptProperty">
+                              <void property="value">
+                                <string>import java.util.regex.Pattern;
+
+Pattern compile = Pattern.compile(context.getMessage("nginx.serverURL.pattern"));
+if (!compile.matcher(text).matches()) {
+    Util.showWarningMessage(context.getMessage("nginx.serverURL.pattern.checkInformation"));
+    return false;
+}
+context.setVariable("serverURL",text);
+return true;</string>
+                              </void>
+                            </object>
+                          </void>
+                          <void property="keyListener">
+                            <object class="com.install4j.api.beans.ScriptProperty">
+                              <void property="value">
+                                <string />
+                              </void>
+                            </object>
+                          </void>
+                          <void property="labelText">
+                            <string>${i18n:nginx.serverURL.name}</string>
+                          </void>
+                          <void property="variableName">
+                            <string>serverURL</string>
+                          </void>
+                        </object>
+                      </java>
+                    </serializedBean>
+                    <initScript />
+                    <visibilityScript />
+                  </formComponent>
+                </beans>
+              </group>
+              <formComponent name="quietPrint" id="108" customizedId="" beanClass="com.install4j.runtime.beans.formcomponents.CheckboxComponent" enabled="true" commentSet="false" comment="" insetTop="" insetLeft="" insetBottom="" insetRight="" resetInitOnPrevious="false">
+                <serializedBean>
+                  <java class="java.beans.XMLDecoder">
+                    <object class="com.install4j.runtime.beans.formcomponents.CheckboxComponent">
+                      <void property="checkboxText">
+                        <string>${i18n:printer.client.quitePrint}</string>
+                      </void>
+                      <void property="helpText">
+                        <string>${i18n:printer.client.quitePrint.helpText}</string>
+                      </void>
+                      <void property="selectionScript">
+                        <object class="com.install4j.api.beans.ScriptProperty">
+                          <void property="value">
+                            <string>context.setVariable("quietPrint",selected);</string>
+                          </void>
+                        </object>
+                      </void>
+                      <void property="variableName">
+                        <string>quietPrint</string>
+                      </void>
+                    </object>
+                  </java>
+                </serializedBean>
+                <initScript />
+                <visibilityScript />
+              </formComponent>
             </formComponents>
           </screen>
           <screen name="" id="8" customizedId="" beanClass="com.install4j.runtime.beans.screens.InstallationScreen" enabled="true" commentSet="false" comment="" actionElevationType="inherit" rollbackBarrier="true" backButton="2" finishScreen="false" wizardIndexChangeType="unchanged" wizardIndexKey="">
@@ -306,7 +430,7 @@
                       </void>
                       <void property="winIconFile">
                         <object class="com.install4j.api.beans.ExternalFile">
-                          <string>./PrintPlus.ico</string>
+                          <string>../PrintPlus.ico</string>
                         </object>
                       </void>
                     </object>
@@ -326,7 +450,22 @@
             <condition />
             <validation />
             <preActivation />
-            <postActivation />
+            <postActivation>import com.voc.print.config.ClientConfig;
+import com.voc.print.util.ConfigUtils;
+
+//读取配置文件
+File configFile = new File(context.getInstallationDirectory(), context.getCompilerVariable("configFile"));
+ClientConfig clientConfig = ConfigUtils.readFromFile(configFile);
+//设置是否代理
+Boolean proxy = (Boolean) context.getVariable("proxy");
+String serverURL = (String) context.getVariable("serverURL");
+Boolean quietPrint = (Boolean) context.getVariable("quietPrint");
+clientConfig.setProxy(proxy);
+clientConfig.setServerURL(serverURL);
+clientConfig.setQuietPrint(quietPrint);
+//Util.showMessage(clientConfig.toString());
+//写配置文件
+ConfigUtils.saveOrUpdateClientConfig(configFile,clientConfig);</postActivation>
             <actions />
             <formComponents />
           </screen>
@@ -499,6 +638,8 @@
       </autoUpdate>
     </windowsArchive>
   </mediaSets>
-  <buildIds buildAll="true" />
+  <buildIds buildAll="true">
+    <mediaSet refId="30" />
+  </buildIds>
   <buildOptions verbose="false" faster="false" disableSigning="false" disableJreBundling="false" debug="false" />
 </install4j>

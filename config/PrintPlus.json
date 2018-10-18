@@ -1,6 +1,6 @@
 {
 	"printerName":"",
 	"quietPrint":false,
-	"proxy":true,
-	"serverURL":"http://42.123.97.19:8086"
+	"proxy":false,
+	"serverURL":"http://192.168.88.235:80"
 }

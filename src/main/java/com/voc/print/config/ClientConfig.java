@@ -31,13 +31,13 @@ public class ClientConfig {
      * 是否Nginx代理
      */
     @JSONField(ordinal = 2)
-    private boolean proxy = true;
+    private boolean proxy = false;
 
     /**
      * 代理服务地址 协议 + 域名 + 端口
      */
     @JSONField(ordinal = 3)
-    private String serverURL = "http://42.123.97.19:8086";
+    private String serverURL = "";
 
     @Override
     public String toString() {

@@ -1,19 +1,15 @@
 package com.voc.print.config;
 
-import com.alibaba.fastjson.JSON;
 import com.voc.print.util.ConfigUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -40,7 +36,7 @@ public class PrintPlusConfiguration {
     private static PrintPlusConfiguration printPlusConfiguration = new PrintPlusConfiguration();
 
     private PrintPlusConfiguration() {
-        this.clientConfig = this.readFromFile(new File(CONFIG_PRINT_PLUS_JSON));
+        this.clientConfig = ConfigUtils.readFromFile(new File(CONFIG_PRINT_PLUS_JSON));
     }
 
     public static PrintPlusConfiguration getInstance() {
@@ -71,21 +67,6 @@ public class PrintPlusConfiguration {
         }
     }
 
-    /**
-     * 读取客户端配置文件
-     *
-     * @param file File
-     * @return ClientConfig
-     */
-    private ClientConfig readFromFile(File file) {
-        byte[] bytes = new byte[0];
-        try {
-            bytes = IOUtils.toByteArray(new FileInputStream(file));
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
-        }
-        return JSON.parseObject(bytes, ClientConfig.class);
-    }
 
     /**
      * 文件监听类
@@ -94,7 +75,7 @@ public class PrintPlusConfiguration {
 
         @Override
         public void onFileChange(File file) {
-            PrintPlusConfiguration.this.clientConfig = PrintPlusConfiguration.this.readFromFile(file);
+            PrintPlusConfiguration.this.clientConfig = ConfigUtils.readFromFile(file);
             if (log.isInfoEnabled()) {
                 log.info("{} changed: {}", file.getName(), PrintPlusConfiguration.this.clientConfig.toString());
             }

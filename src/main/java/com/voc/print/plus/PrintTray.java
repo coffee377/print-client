@@ -65,8 +65,8 @@ public class PrintTray {
             });
             MenuItem menuExit = new MenuItem(Inter.getLocText("menu.exit"));
             menuExit.addActionListener(actionEvent -> {
-                this.stopClientServer();
                 systemTray.remove(this.trayIcon);
+                this.stopClientServer();
                 System.exit(0);
             });
             popupMenu.add(menuSetting);
