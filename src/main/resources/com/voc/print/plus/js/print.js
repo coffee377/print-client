@@ -228,14 +228,14 @@
 
             var printUrl = config.printUrl == null ? FR.serverURL + FR.servletURL : config.printUrl;
 
-            console.log("压缩版"
-                + "\nsessionID：" + sessionID
-                + "\nFR.serverURL：" + FR.serverURL
-                + "\nFR.servletURL：" + FR.servletURL
-                + "\nconfig.printUrl：" + config.printUrl
-                + "\nconfig:" + JSON.stringify(config)
-                + "\n打印地址(原始)：" + printUrl
-            );
+            // console.log("压缩版"
+            //     + "\nsessionID：" + sessionID
+            //     + "\nFR.serverURL：" + FR.serverURL
+            //     + "\nFR.servletURL：" + FR.servletURL
+            //     + "\nconfig.printUrl：" + config.printUrl
+            //     + "\nconfig:" + JSON.stringify(config)
+            //     + "\n打印地址(原始)：" + printUrl
+            // );
 
             nativePrintLoadingDialog = new FR.Dialog({
                 destroyOnClose: true,
@@ -270,40 +270,40 @@
             }
             nativePrintSocket.on("nginxProxy", function (e) {
                 var data = FR.jsonDecode(FR.cjkDecode(e.message));
-                console.log("nginxProxy 交互前：printUrl :" + printUrl);
+                // console.log("nginxProxy 交互前：printUrl :" + printUrl);
                 if (data.proxy) {
                     printUrl = config.printUrl == null ? data.serverURL + FR.servletURL : config.printUrl;
                 }
-                console.log("nginxProxy 交互后：printUrl :" + printUrl);
+                // console.log("nginxProxy 交互后：printUrl :" + printUrl);
             });
             nativePrintSocket.on("aliveChecking", function () {
                 if (isLoadingNativePrint) {
                     /*Nginx 代理交互处理*/
                     nativePrintSocket.emit("nginxProxy");
-                    console.log("aliveChecking 交互成功");
+                    // console.log("aliveChecking 交互成功");
                     isLoadingNativePrint = false;
                     nativePrintSocket.emit("getConfigData", FR.jsonEncode(FR.getPureConfig(config)))
                 }
             });
             nativePrintSocket.on("getConfigData", function (e) {
                 var data = FR.jsonDecode(FR.cjkDecode(e.message));
-                console.log("获取客户端配置成功：" + JSON.stringify(data));
+                // console.log("获取客户端配置成功：" + JSON.stringify(data));
                 if (data.isQuietPrint) {
-                    console.log("静默打印");
+                    // console.log("静默打印");
                     if (config.isCustomPrint) {
-                        console.log("自定义打印");
+                        // console.log("自定义打印");
                         FR.newNativePrintWithArgs({url: config.customFileUrl, isCustomPrint: true})
                     } else {
-                        console.log("非自定义打印");
+                        // console.log("非自定义打印");
                         FR.newNativePrintWithArgs({
                             url: printUrl + "?sessionID=" + sessionID + "&op=fr_applet&cmd=print",
                             sessionID: sessionID
                         })
                     }
                 } else {
-                    console.log("非静默打印");
+                    // console.log("非静默打印");
                     if (config.isPopUp) {
-                        console.log("弹出窗口");
+                        // console.log("弹出窗口");
                         nativePrintLoadingDialog.destroy();
                         config.printers = data.printers;
                         config.paperSizeNames = data.paperSizeNames;
@@ -314,18 +314,18 @@
                             config.printerName = "";
                         }
                         if (config.isCustomPrint) {
-                            console.log("自定义打印");
+                            // console.log("自定义打印");
                             config = $.extend(data, config);
                             FR.startNewNativePrintPreview(sessionID, config, printUrl)
                         } else {
-                            console.log("非自定义打印");
+                            // console.log("非自定义打印");
                             FR.getDefaultNewNativePrintConfig(sessionID, printUrl, function (data) {
                                 config = $.extend(data, config);
                                 FR.startNewNativePrintPreview(sessionID, config, printUrl)
                             })
                         }
                     } else {
-                        console.log("不弹出窗口");
+                        // console.log("不弹出窗口");
                         config = $.extend(data, config);
                         FR.defaultNewNativePrint(config, sessionID, printUrl)
                     }
