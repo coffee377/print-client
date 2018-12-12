@@ -1,17 +1,17 @@
 package com.voc.print.config;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.fr.general.IOUtils;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.fr.stable.ProductConstants;
 import com.fr.stable.StableUtils;
-import com.fr.third.fasterxml.jackson.databind.ObjectMapper;
 import com.voc.print.file.PrintConfig;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -27,13 +27,13 @@ import java.io.IOException;
 @Setter
 @Slf4j
 public class ServerConfig {
-    private static final String CONFIG_FILE_PATH = StableUtils.pathJoin(ProductConstants.getEnvHome(),
-            "print.config");
+    private static final String CONFIG_FILE_PATH =
+            StableUtils.pathJoin(ProductConstants.getEnvHome(), "print.config");
 
     /**
      * 打印机名称
      */
-    private String printerName = "";
+    private String printerName;
     /**
      * 打印份数
      */
@@ -65,9 +65,9 @@ public class ServerConfig {
     /**
      * 是否静默打印
      */
-    private boolean isQuietPrint = false;
+    private boolean quietPrint;
     /**
-     * 索引
+     * 打印页码
      */
     private String index;
 
@@ -110,46 +110,62 @@ public class ServerConfig {
     }
 
     public static void update(JSONObject var0) {
-        ServerConfig var1 = getInstance();
-        var1.setPrinterName(var0.getString("printerName"));
-        var1.setCopy(var0.getInteger("copy"));
-        var1.setOrientation(var0.getInteger("orientation"));
-        var1.setPaperSizeText(var0.getString("paperSize"));
-        float var2 = (float) var0.getDoubleValue("marginTop");
-        float var3 = (float) var0.getDoubleValue("marginLeft");
-        float var4 = (float) var0.getDoubleValue("marginBottom");
-        float var5 = (float) var0.getDoubleValue("marginRight");
-        var1.setMargin(var2, var3, var4, var5);
-        var1.setIndex(var0.getString("index"));
-        var1.setQuietPrint(var0.getBooleanValue("quietPrint"));
-        var1.saveFile();
+        String s = JSON.toJSONString(var0);
+        ServerConfig serverConfig = JSON.parseObject(s, ServerConfig.class);
+//        ServerConfig config = getInstance();
+//        config.setPrinterName(var0.getString("printerName"));
+//        config.setCopy(var0.getInteger("copy"));
+//        config.setOrientation(var0.getInteger("orientation"));
+//        config.setPaperSizeText(var0.getString("paperSize"));
+//        float var2 = (float) var0.getDoubleValue("marginTop");
+//        float var3 = (float) var0.getDoubleValue("marginLeft");
+//        float var4 = (float) var0.getDoubleValue("marginBottom");
+//        float var5 = (float) var0.getDoubleValue("marginRight");
+//        config.setMargin(var2, var3, var4, var5);
+//        config.setIndex(var0.getString("index"));
+//        config.setQuietPrint(var0.getBooleanValue("quietPrint"));
+        serverConfig.saveFile();
     }
 
-    public void saveFile() {
-        File file = new File(CONFIG_FILE_PATH);
-        ObjectMapper var2 = new ObjectMapper();
-
-        try {
-            byte[] var3 = var2.writerWithDefaultPrettyPrinter().writeValueAsBytes(ConfigHolder.serverConfig);
-            StableUtils.makesureFileExist(file);
-            FileOutputStream var4 = new FileOutputStream(CONFIG_FILE_PATH);
-            IOUtils.copyBinaryTo(new ByteArrayInputStream(var3), var4);
-            var4.close();
-        } catch (IOException var5) {
-            var5.printStackTrace();
+    private void saveFile() {
+//        File file = new File(CONFIG_FILE_PATH);
+//        ObjectMapper var2 = new ObjectMapper();
+//
+//        try {
+//            byte[] var3 = var2.writerWithDefaultPrettyPrinter().writeValueAsBytes(ConfigHolder.serverConfig);
+//            StableUtils.makesureFileExist(file);
+//            FileOutputStream var4 = new FileOutputStream(CONFIG_FILE_PATH);
+//            IOUtils.copyBinaryTo(new ByteArrayInputStream(var3), var4);
+//            var4.close();
+//        } catch (IOException e) {
+//            log.error(e.getMessage());
+//        }
+        try (FileOutputStream out = new FileOutputStream(CONFIG_FILE_PATH)) {
+            byte[] bytes = JSON.toJSONBytes(this, SerializerFeature.PrettyFormat);
+            IOUtils.write(bytes, out);
+        } catch (IOException e) {
+            log.error(e.getMessage());
         }
+
     }
 
     private static ServerConfig readFromFile() {
-        File file = new File(CONFIG_FILE_PATH);
-        ObjectMapper var1 = new ObjectMapper();
-        if (file.exists()) {
-            try {
-                return var1.readValue(file, ServerConfig.class);
-            } catch (IOException e) {
-                log.error(e.getMessage(), e);
-            }
+        try {
+            byte[] bytes = IOUtils.toByteArray(new FileInputStream(CONFIG_FILE_PATH));
+            ServerConfig config = JSON.parseObject(bytes, ServerConfig.class);
+            return config;
+        } catch (IOException e) {
+           log.error(e.getMessage());
         }
+//        File file = new File(CONFIG_FILE_PATH);
+//        ObjectMapper var1 = new ObjectMapper();
+//        if (file.exists()) {
+//            try {
+//                return var1.readValue(file, ServerConfig.class);
+//            } catch (IOException e) {
+//                log.error(e.getMessage());
+//            }
+//        }
 
         return new ServerConfig();
     }

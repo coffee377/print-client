@@ -1,10 +1,10 @@
 package com.voc.print.plus;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.fr.base.*;
 import com.fr.general.Inter;
 import com.fr.general.xml.GeneralXMLTools;
-import com.alibaba.fastjson.JSONObject;
 import com.fr.page.BaseSinglePagePrintable;
 import com.fr.page.BaseSingleReportCache;
 import com.fr.page.PageXmlProvider;
@@ -19,6 +19,7 @@ import com.fr.xml.ReportXMLUtils;
 import com.voc.print.config.PrintPlusConfiguration;
 import com.voc.print.config.ServerConfig;
 import com.voc.print.socket.PrintClientServer;
+import com.voc.print.util.ConfigUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -27,7 +28,6 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 /**
@@ -190,7 +190,10 @@ public class PrintPlus {
      */
     private void printAsApplet(JSONObject jsonObject, URL url, UUID uuid) throws Exception {
         this.initModule();
-        ServerConfig.update(jsonObject);
+        // TODO: 2018/12/12 0012 17:20 更新客户端配置文件
+//        ServerConfig.update(jsonObject);
+        ConfigUtils.saveOrUpdateClientConfig(jsonObject);
+//        PrintPlusConfiguration.getInstance().setClientConfig(null);
         /*是否显示对话框*/
         boolean isShowDialog = jsonObject.getBooleanValue("isShowDialog");
         /*是否单表*/

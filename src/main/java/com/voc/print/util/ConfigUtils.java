@@ -24,7 +24,7 @@ import java.io.IOException;
 public class ConfigUtils {
 
     /**
-     * 报存配置文件
+     * 保存配置文件
      *
      * @param file  File
      * @param datas byte[]
@@ -35,6 +35,17 @@ public class ConfigUtils {
         } catch (IOException e) {
             log.error(e.getMessage(), e);
         }
+    }
+
+    /**
+     * 保存客户端配置文件
+     *
+     * @param config JSONObject
+     */
+    public static void saveOrUpdateClientConfig(JSONObject config) {
+        String s = JSON.toJSONString(config);
+        ClientConfig clientConfig = JSON.parseObject(s, ClientConfig.class);
+        saveOrUpdateClientConfig(clientConfig);
     }
 
     /**
@@ -81,4 +92,5 @@ public class ConfigUtils {
         }
         return JSON.parseObject(bytes, ClientConfig.class);
     }
+
 }

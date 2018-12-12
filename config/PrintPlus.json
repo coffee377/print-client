@@ -1,6 +1,8 @@
 {
+	"copy":0,
+	"orientation":0,
 	"printerName":"",
-	"quietPrint":false,
+	"quietPrint":true,
 	"proxy":false,
-	"serverURL":"http://192.168.88.235:80"
+	"serverURL":""
 }

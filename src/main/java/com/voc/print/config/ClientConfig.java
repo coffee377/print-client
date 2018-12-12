@@ -26,7 +26,7 @@ public class ClientConfig {
      * 是否静默打印
      */
     @JSONField(ordinal = 1)
-    private boolean quietPrint = false;
+    private boolean quietPrint = true;
 
     /**
      * 是否Nginx代理
@@ -39,6 +39,27 @@ public class ClientConfig {
      */
     @JSONField(ordinal = 3)
     private String serverURL = "";
+
+    /**
+     * 页面尺寸
+     */
+    private String paperSizeText;
+
+    /**
+     * 打印份数
+     */
+    private int copy;
+
+
+    /**
+     * 打印方向
+     */
+    private int orientation;
+
+    /**
+     * 打印页码
+     */
+    private String index;
 
     @Override
     public String toString() {
