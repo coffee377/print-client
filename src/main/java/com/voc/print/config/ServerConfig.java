@@ -1,11 +1,11 @@
 package com.voc.print.config;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fr.general.IOUtils;
-import com.fr.json.JSONObject;
-import com.voc.print.file.PrintConfig;
 import com.fr.stable.ProductConstants;
 import com.fr.stable.StableUtils;
 import com.fr.third.fasterxml.jackson.databind.ObjectMapper;
+import com.voc.print.file.PrintConfig;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,8 @@ import java.io.IOException;
 @Setter
 @Slf4j
 public class ServerConfig {
-    private static final String CONFIG_FILE_PATH = StableUtils.pathJoin(ProductConstants.getEnvHome(), "print.config");
+    private static final String CONFIG_FILE_PATH = StableUtils.pathJoin(ProductConstants.getEnvHome(),
+            "print.config");
 
     /**
      * 打印机名称
@@ -110,18 +111,17 @@ public class ServerConfig {
 
     public static void update(JSONObject var0) {
         ServerConfig var1 = getInstance();
-
-        var1.setPrinterName(var0.optString("printerName"));
-        var1.setCopy(var0.optInt("copy"));
-        var1.setOrientation(var0.optInt("orientation"));
-        var1.setPaperSizeText(var0.optString("paperSize"));
-        float var2 = (float) var0.optDouble("marginTop");
-        float var3 = (float) var0.optDouble("marginLeft");
-        float var4 = (float) var0.optDouble("marginBottom");
-        float var5 = (float) var0.optDouble("marginRight");
+        var1.setPrinterName(var0.getString("printerName"));
+        var1.setCopy(var0.getInteger("copy"));
+        var1.setOrientation(var0.getInteger("orientation"));
+        var1.setPaperSizeText(var0.getString("paperSize"));
+        float var2 = (float) var0.getDoubleValue("marginTop");
+        float var3 = (float) var0.getDoubleValue("marginLeft");
+        float var4 = (float) var0.getDoubleValue("marginBottom");
+        float var5 = (float) var0.getDoubleValue("marginRight");
         var1.setMargin(var2, var3, var4, var5);
-        var1.setIndex(var0.optString("index"));
-        var1.setQuietPrint(var0.optBoolean("quietPrint"));
+        var1.setIndex(var0.getString("index"));
+        var1.setQuietPrint(var0.getBooleanValue("quietPrint"));
         var1.saveFile();
     }
 
@@ -160,4 +160,5 @@ public class ServerConfig {
         private ConfigHolder() {
         }
     }
+
 }

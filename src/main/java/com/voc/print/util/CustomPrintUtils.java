@@ -1,9 +1,9 @@
 package com.voc.print.util;
 
+import com.alibaba.fastjson.JSONException;
 import com.fr.general.ComparatorUtils;
-import com.fr.json.JSONArray;
-import com.fr.json.JSONException;
-import com.fr.json.JSONObject;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.fr.stable.StringUtils;
 import com.fr.third.com.lowagie.text.PageSize;
 import com.fr.third.com.lowagie.text.Rectangle;
@@ -78,7 +78,7 @@ public class CustomPrintUtils {
                     JSONObject var8 = new JSONObject();
                     var8.put("text", var7);
                     var8.put("value", var7);
-                    var2.put(var8);
+                    var2.add(var8);
                 }
             }
 

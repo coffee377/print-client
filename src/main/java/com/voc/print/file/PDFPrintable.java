@@ -24,6 +24,7 @@ import java.io.IOException;
  * @time 2018/10/12 13:13
  */
 public class PDFPrintable implements Printable {
+
     private final PDDocument document;
     private final PDFRenderer renderer;
     private final boolean showPageBorder;
@@ -135,4 +136,5 @@ public class PDFPrintable implements Printable {
         int var2 = var0.getRotation();
         return var2 != 90 && var2 != 270 ? var1 : new PDRectangle(var1.getLowerLeftY(), var1.getLowerLeftX(), var1.getHeight(), var1.getWidth());
     }
+
 }

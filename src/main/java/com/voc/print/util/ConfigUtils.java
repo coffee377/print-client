@@ -24,7 +24,7 @@ import java.io.IOException;
 public class ConfigUtils {
 
     /**
-     * 报错配置文件
+     * 报存配置文件
      *
      * @param file  File
      * @param datas byte[]

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
+ * 客户端配置文件
  * Created with IntelliJ IDEA.
  *
  * @author Wu Yujie
@@ -43,4 +44,5 @@ public class ClientConfig {
     public String toString() {
         return JSON.toJSONString(this);
     }
+
 }

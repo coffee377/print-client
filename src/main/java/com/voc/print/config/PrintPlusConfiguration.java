@@ -81,7 +81,6 @@ public class PrintPlusConfiguration {
             }
         }
 
-
         @Override
         public void onFileDelete(File file) {
             log.warn("{} deleted, default config file will be created", file.getName());

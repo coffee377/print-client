@@ -1,10 +1,10 @@
 package com.voc.print.file;
 
-import com.fr.json.JSONObject;
-import com.voc.print.config.ServerConfig;
+import com.alibaba.fastjson.JSONObject;
 import com.fr.stable.unit.MM;
 import com.fr.third.com.lowagie.text.PageSize;
 import com.fr.third.com.lowagie.text.Rectangle;
+import com.voc.print.config.ServerConfig;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -105,7 +105,7 @@ public class PrintConfig {
     }
 
     public PrintConfig() {
-        this.init(JSONObject.create());
+        this.init(new JSONObject());
     }
 
     private PrintConfig(JSONObject json) {
@@ -113,21 +113,21 @@ public class PrintConfig {
     }
 
     private void init(JSONObject jsonObject) {
-        String pageText = jsonObject.optString("paperSize", "A4");
+        String pageText = jsonObject.getString("paperSize");
         this.paperSizeText = pageText;
         Rectangle rectangle = PageSize.getRectangle(pageText);
         this.width = (double) rectangle.getWidth();
         this.height = (double) rectangle.getHeight();
-        this.marginTop = (float) jsonObject.optDouble("marginTop", 0.0D);
-        this.marginLeft = (float) jsonObject.optDouble("marginLeft", 0.0D);
-        this.marginBottom = (float) jsonObject.optDouble("marginBottom", 0.0D);
-        this.marginRight = (float) jsonObject.optDouble("marginRight", 0.0D);
-        this.orientation = jsonObject.optInt("orientation", 0);
-        this.index = jsonObject.optString("index");
-        this.copy = jsonObject.optInt("copy", 1);
-        this.printerName = jsonObject.optString("printerName", "");
-        this.reportTotalPage = jsonObject.optInt("reportTotalPage", 1);
-        this.quietPrint = jsonObject.optBoolean("quietPrint", false);
+        this.marginTop = (float) jsonObject.getDoubleValue("marginTop");
+        this.marginLeft = (float) jsonObject.getDoubleValue("marginLeft");
+        this.marginBottom = (float) jsonObject.getDoubleValue("marginBottom");
+        this.marginRight = (float) jsonObject.getDoubleValue("marginRight");
+        this.orientation = jsonObject.getIntValue("orientation");
+        this.index = jsonObject.getString("index");
+        this.copy = jsonObject.getIntValue("copy");
+        this.printerName = jsonObject.getString("printerName");
+        this.reportTotalPage = jsonObject.getIntValue("reportTotalPage");
+        this.quietPrint = jsonObject.getBooleanValue("quietPrint");
     }
 
     public static PrintConfig load(JSONObject jsonObject) {
@@ -135,12 +135,12 @@ public class PrintConfig {
     }
 
     public static PrintConfig loadFromServer() {
-        PrintConfig var0 = new PrintConfig(JSONObject.create());
+        PrintConfig var0 = new PrintConfig(new JSONObject());
         ServerConfig var1 = ServerConfig.getInstance();
         Rectangle var2 = PageSize.getRectangle(var1.getPaperSizeText());
         var0.paperSizeText = var1.getPaperSizeText();
-        var0.width = (double)var2.getWidth();
-        var0.height = (double)var2.getHeight();
+        var0.width = (double) var2.getWidth();
+        var0.height = (double) var2.getHeight();
         var0.marginTop = var1.getMarginTop();
         var0.marginLeft = var1.getMarginLeft();
         var0.marginBottom = var1.getMarginBottom();

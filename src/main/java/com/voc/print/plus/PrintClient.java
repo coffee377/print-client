@@ -16,6 +16,7 @@ import java.util.Locale;
  */
 @Slf4j
 public class PrintClient {
+
     public PrintClient() {
     }
 
@@ -30,4 +31,5 @@ public class PrintClient {
             clientServer.start();
         }
     }
+
 }

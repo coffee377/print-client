@@ -13,6 +13,7 @@ import java.net.URLDecoder;
  * @time 2018/10/12 12:53
  */
 public class FileUtils {
+
     public FileUtils() {
     }
 
@@ -90,4 +91,5 @@ public class FileUtils {
             return false;
         }
     }
+
 }

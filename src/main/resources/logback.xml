@@ -48,11 +48,14 @@
         <appender-ref ref="fileAppender"/>
     </logger>
 
+    <logger name="com.voc" level="INFO" additivity="false">
+        <appender-ref ref="fileAppender"/>
+    </logger>
+
     <!-- 控制台日志输出级别 TRACE < DEBUG < INFO < WARN < ERROR -->
     <root level="WARN">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="fileAppender"/>
-    </root>
-    　　　　　　
+    </root>　　　　
     　　　　　　　
 </configuration>

@@ -1,9 +1,10 @@
 package com.voc.print.plus;
 
+import com.alibaba.fastjson.JSON;
 import com.fr.base.*;
 import com.fr.general.Inter;
 import com.fr.general.xml.GeneralXMLTools;
-import com.fr.json.JSONObject;
+import com.alibaba.fastjson.JSONObject;
 import com.fr.page.BaseSinglePagePrintable;
 import com.fr.page.BaseSingleReportCache;
 import com.fr.page.PageXmlProvider;
@@ -99,7 +100,7 @@ public class PrintPlus {
      */
     public void printWithJsonArg(JSONObject jsonObject, UUID uuid) {
         PrintTray.getInstance().markPrintingTray();
-        if (StringUtils.isEmpty(jsonObject.optString(IS_SHOW_DIALOG))) {
+        if (StringUtils.isEmpty(jsonObject.getString(IS_SHOW_DIALOG))) {
             this.init(jsonObject, uuid);
         }
         PrintTray.getInstance().printOver();
@@ -117,7 +118,7 @@ public class PrintPlus {
 
         try {
             String var4 = URLDecoder.decode(var3, "UTF-8");
-            jsonObject = new JSONObject(var4);
+            jsonObject = JSON.parseObject(var4);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -126,33 +127,33 @@ public class PrintPlus {
     }
 
     private JSONObject getJsonObjectForIE(String[] var1, JSONObject var2) {
-        int var3 = var1.length;
-        AtomicReference<StringBuffer> var4 = new AtomicReference<>(new StringBuffer());
-
-        try {
-            for (int var5 = 0; var5 < var3; ++var5) {
-                var4.get().append(var1[var5]);
-            }
-
-            var2 = JSONObject.create();
-            String var15 = var4.get().substring(PREFIX.length() + 1, var4.get().lastIndexOf("}"));
-            String[] var6 = var15.split(",");
-            String[] var7 = var6;
-            int var8 = var6.length;
-
-            for (int var9 = 0; var9 < var8; ++var9) {
-                String var10 = var7[var9];
-                int var11 = var10.indexOf(":");
-                if (var11 != -1) {
-                    String var12 = var10.substring(0, var11);
-                    String var13 = var10.substring(var11 + 1);
-                    var2.put(var12, var13);
-                }
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            PrintTray.getInstance().printOver();
-        }
+//        int var3 = var1.length;
+//        AtomicReference<StringBuffer> var4 = new AtomicReference<>(new StringBuffer());
+//
+//        try {
+//            for (int var5 = 0; var5 < var3; ++var5) {
+//                var4.get().append(var1[var5]);
+//            }
+//
+//            var2 = JSONObject.create();
+//            String var15 = var4.get().substring(PREFIX.length() + 1, var4.get().lastIndexOf("}"));
+//            String[] var6 = var15.split(",");
+//            String[] var7 = var6;
+//            int var8 = var6.length;
+//
+//            for (int var9 = 0; var9 < var8; ++var9) {
+//                String var10 = var7[var9];
+//                int var11 = var10.indexOf(":");
+//                if (var11 != -1) {
+//                    String var12 = var10.substring(0, var11);
+//                    String var13 = var10.substring(var11 + 1);
+//                    var2.put(var12, var13);
+//                }
+//            }
+//        } catch (Exception e) {
+//            log.error(e.getMessage(), e);
+//            PrintTray.getInstance().printOver();
+//        }
 
         return var2;
     }
@@ -166,7 +167,7 @@ public class PrintPlus {
      */
     private void init(JSONObject jsonObject, UUID uuid) {
         try {
-            String urlString = jsonObject.optString("url");
+            String urlString = jsonObject.getString("url");
             if (StringUtils.isEmpty(urlString)) {
                 return;
             }
@@ -191,11 +192,11 @@ public class PrintPlus {
         this.initModule();
         ServerConfig.update(jsonObject);
         /*是否显示对话框*/
-        boolean isShowDialog = jsonObject.optBoolean("isShowDialog", false);
+        boolean isShowDialog = jsonObject.getBooleanValue("isShowDialog");
         /*是否单表*/
-        boolean isSingleSheet = jsonObject.optBoolean("isSingleSheet");
+        boolean isSingleSheet = jsonObject.getBooleanValue("isSingleSheet");
         /*打印页码*/
-        String index = jsonObject.optString("index");
+        String index = jsonObject.getString("index");
         InputStream inputStream = url.openStream();
         PageXmlProvider pageXmlOperator = StableFactory.getMarkedInstanceObjectFromClass("PageXmlOperator", PageXmlProvider.class);
         BaseSinglePagePrintable[] baseSinglePagePrintables = pageXmlOperator.deXmlizable4SinglePage(inputStream);
@@ -215,7 +216,7 @@ public class PrintPlus {
         if (uuid != null) {
             PrintClientServer.getInstance().onBeforePrint(uuid);
         }
-        this.print(isShowDialog, ServerConfig.getInstance().getPrinterName());
+        this.print(false, ServerConfig.getInstance().getPrinterName());
         reportCache.clearReportPageCache();
 //        URL var12 = new URL(url.toString().replaceAll("op=fr_applet&cmd=print", "op=fr_applet&cmd=printover&printvalue=true"));
 //        var12.openStream();
