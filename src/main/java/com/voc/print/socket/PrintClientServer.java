@@ -1,14 +1,10 @@
 package com.voc.print.socket;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
-import com.fr.general.GeneralUtils;
-import com.fr.report.stable.ReportConstants;
 import com.fr.stable.BuildContext;
 import com.fr.stable.StringUtils;
 import com.voc.print.config.ClientConfig;
@@ -16,8 +12,6 @@ import com.voc.print.config.PrintPlusConfiguration;
 import com.voc.print.config.Result;
 import com.voc.print.plus.PrintPlus;
 import com.voc.print.plus.PrintTray;
-import com.voc.print.util.ConfigUtils;
-import com.voc.print.util.CustomPrintUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.UUID;
@@ -37,10 +31,11 @@ public class PrintClientServer {
     private final static String HOST = "localhost";
     private final static int PORT = 10227;
     private final static String EVENT_NGINX_PROXY = "nginxProxy";
-    private final static String EVENT_ALIVE_CHECKING = "aliveChecking";
+    private final static String EVENT_TYPE_CHECKING = "typeChecking";
     private final static String EVENT_GET_CONFIG_DATA = "getConfigData";
     private final static String EVENT_BEFORE_PRINT = "beforePrint";
-    private final static String EVENT_START_PRINT = "startPrint";
+    private final static String EVENT_PRINT = "print";
+    private final static String EVENT_PREVIEW = "preview";
     private final static String EVENT_AFTER_PRINT = "afterPrint";
     private final static String EVENT_ERROR_OCCURS = "errorOccurs";
 
@@ -68,32 +63,32 @@ public class PrintClientServer {
             PrintClientServer.this.socketIOServer.addDisconnectListener(
                     socketIOClient -> log.warn("与客户端[{}]失去连接", socketIOClient.getSessionId())
             );
-//            PrintClientServer.this.socketIOServer.addEventListener(EVENT_NGINX_PROXY, ChatObject.class, (client, data, request) -> {
-//                ClientConfig clientConfig = PrintPlusConfiguration.getInstance().getClientConfig();
-//                JSONObject clientData = new JSONObject();
-//                if (log.isDebugEnabled()) {
-//                    log.debug("Nginx Proxy: {}", clientConfig.isProxy());
-//                }
-//                clientData.put("proxy", clientConfig.isProxy());
-//                clientData.put("serverURL", clientConfig.getServerURL());
-//                String encode = CodeUtils.cjkEncode(clientData.toString());
-//                client.sendEvent(EVENT_NGINX_PROXY, new ChatObject(encode));
-//            });
-            /*存活检查事件*/
-//            PrintClientServer.this.socketIOServer.addEventListener(EVENT_ALIVE_CHECKING, ChatObject.class,
-//                    (client, data, request) -> client.sendEvent(EVENT_ALIVE_CHECKING));
-            PrintClientServer.this.socketIOServer.addEventListener(EVENT_GET_CONFIG_DATA, ChatObject.class,
+            PrintClientServer.this.socketIOServer.addEventListener(EVENT_TYPE_CHECKING, ChatObject.class,
+                    (client, data, request) -> client.sendEvent(EVENT_BEFORE_PRINT)
+            );
+            PrintClientServer.this.socketIOServer.addEventListener(EVENT_BEFORE_PRINT, ChatObject.class,
                     (client, data, request) -> {
-                        JSONObject clientConfigData = this.getClientConfigData(data);
-                        client.sendEvent(EVENT_GET_CONFIG_DATA, ChatObject.of(clientConfigData));
+                        JSONObject jsonMessage = data.getJSONMessage();
+                        /*静默打印*/
+                        if (jsonMessage.getBooleanValue(QUIET_PRINT)) {
+                            ClientConfig clientConfig = PrintPlusConfiguration.getInstance().getClientConfig();
+                            JSONObject clientData = JSON.parseObject(clientConfig.toString());
+                            client.sendEvent(EVENT_PRINT, clientData);
+                        }
+                        /*打印预览*/
+                        else {
+                            JSONObject previewConfig = new JSONObject();
+                            client.sendEvent(EVENT_PREVIEW, previewConfig);
+                        }
+
                     });
-            PrintClientServer.this.socketIOServer.addEventListener(EVENT_START_PRINT,
+            PrintClientServer.this.socketIOServer.addEventListener(EVENT_PRINT,
                     ChatObject.class, (client, data, request) -> {
-                        PrintPlus.getInstance().printWithJsonArg(data.getJSONMessage(), client.getSessionId());
-                        client.sendEvent(EVENT_AFTER_PRINT);
+                        boolean success = PrintPlus.getInstance().printWithJsonArg(data.getJSONMessage(),
+                                client.getSessionId());
+                        client.sendEvent(EVENT_AFTER_PRINT, success ? Result.success("打印成功")
+                                : Result.failure(1, "打印失败"));
                     });
-            PrintClientServer.this.socketIOServer.addEventListener(EVENT_ERROR_OCCURS,
-                    ChatObject.class, (client, data, request) -> client.sendEvent(EVENT_AFTER_PRINT));
             try {
                 Thread.sleep(Integer.MAX_VALUE);
             } catch (InterruptedException e) {
@@ -104,56 +99,49 @@ public class PrintClientServer {
         });
     }
 
-    /**
-     * 获取客户端配置
-     *
-     * @return JSONArray
-     */
-    private JSONObject getClientConfigData(ChatObject chatObject) throws JSONException {
-        ClientConfig clientConfig = PrintPlusConfiguration.getInstance().getClientConfig();
-        JSONObject clientData = JSON.parseObject(clientConfig.toString());
+//    /**
+//     * 获取客户端配置
+//     *
+//     * @return JSONArray
+//     */
+//    private JSONObject getClientConfigData(ChatObject chatObject) throws JSONException {
+//        ClientConfig clientConfig = PrintPlusConfiguration.getInstance().getClientConfig();
+//        JSONObject clientData = JSON.parseObject(clientConfig.toString());
+//
+//        //非静默打印,获取客户端配置
+//        if (!chatObject.getJSONMessage().getBooleanValue(QUIET_PRINT)) {
+//            /*1.客户端可用打印机*/
+//            JSONArray printers = new JSONArray();
+//            String[] printerNameArray = GeneralUtils.getSystemPrinterNameArray();
+//            JSONObject printer;
+//            for (String printerName : printerNameArray) {
+//                printer = new JSONObject();
+//                printer.put("text", printerName);
+//                printer.put("value", printerName);
+//                printers.add(printer);
+//            }
+//            clientData.put("printers", printers);
+//
+//            /*2.客户端可用页面纸张*/
+//            JSONArray paperSizeNames = new JSONArray();
+//            JSONObject paperSize;
+//            for (int i = 0; i < ReportConstants.PaperSizeNameSizeArray.length; ++i) {
+//                paperSize = new JSONObject();
+//                String paperSizeName = ReportConstants.PaperSizeNameSizeArray[i][0].toString();
+//                paperSize.put("text", paperSizeName);
+//                paperSize.put("value", paperSizeName);
+//                paperSizeNames.add(paperSize);
+//            }
+//            clientData.put("paperSizeNames", paperSizeNames);
+//        }
+//
+//        return clientData;
+//    }
 
-        //非静默打印,获取客户端配置
-        if (!chatObject.getJSONMessage().getBooleanValue(QUIET_PRINT)) {
-            /*1.客户端可用打印机*/
-            JSONArray printers = new JSONArray();
-            String[] printerNameArray = GeneralUtils.getSystemPrinterNameArray();
-            JSONObject printer;
-            for (String printerName : printerNameArray) {
-                printer = new JSONObject();
-                printer.put("text", printerName);
-                printer.put("value", printerName);
-                printers.add(printer);
-            }
-            clientData.put("printers", printers);
-
-            /*2.客户端可用页面纸张*/
-            JSONArray paperSizeNames = new JSONArray();
-            JSONObject paperSize;
-            for (int i = 0; i < ReportConstants.PaperSizeNameSizeArray.length; ++i) {
-                paperSize = new JSONObject();
-                String paperSizeName = ReportConstants.PaperSizeNameSizeArray[i][0].toString();
-                paperSize.put("text", paperSizeName);
-                paperSize.put("value", paperSizeName);
-                paperSizeNames.add(paperSize);
-            }
-            clientData.put("paperSizeNames", paperSizeNames);
-        }
-
-        return clientData;
-    }
-
-    public void onBeforePrint(UUID uuid) {
+    public void onErrorOccurs(UUID uuid, int errorCode, String errorMessage) {
         SocketIOClient client = this.socketIOServer.getClient(uuid);
-        if (client != null) {
-            client.sendEvent(EVENT_BEFORE_PRINT);
-        }
-    }
-
-    public void onErrorOccurs(UUID uuid, String error) {
-        SocketIOClient client = this.socketIOServer.getClient(uuid);
-        if (StringUtils.isNotEmpty(error)) {
-            client.sendEvent(EVENT_ERROR_OCCURS, Result.failure("-1", error));
+        if (StringUtils.isNotEmpty(errorMessage)) {
+            client.sendEvent(EVENT_ERROR_OCCURS, Result.failure(errorCode, errorMessage));
         }
     }
 

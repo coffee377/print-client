@@ -28,7 +28,7 @@ public class Result implements Serializable {
      * 响应编码
      */
     @JSONField(ordinal = 1)
-    private String code;
+    private int code;
 
     /**
      * 响应信息
@@ -45,7 +45,7 @@ public class Result implements Serializable {
     private Result() {
     }
 
-    public static Result of(boolean success, String code, String message, Object data) {
+    public static Result of(boolean success, int code, String message, Object data) {
         Result item = new Result();
         item.setSuccess(success);
         item.setCode(code);
@@ -55,19 +55,19 @@ public class Result implements Serializable {
     }
 
     public static Result success(Object data) {
-        return of(true, "0", "SUCCESS", data);
+        return of(true, 0, "SUCCESS", data);
     }
 
     public static Result success() {
-        return success(new Object());
+        return success(null);
     }
 
-    public static Result failure(String code, String message, Object data) {
+    public static Result failure(int code, String message, Object data) {
         return of(false, code, message, data);
     }
 
-    public static Result failure(String code, String message) {
-        return failure(code, message, new Object());
+    public static Result failure(int code, String message) {
+        return failure(code, message, null);
     }
 
 }

@@ -35,7 +35,7 @@ public class ClientConfig extends BaseJsonConfig {
      * 是否静默打印（web 页面是否弹出配置或预览界面）
      */
     @JSONField(ordinal = 3)
-    private boolean quietPrint;
+    private boolean quietPrint = true;
 
     /**
      * 是否Nginx代理
@@ -91,7 +91,7 @@ public class ClientConfig extends BaseJsonConfig {
      * @see PageOrientation
      */
     @JSONField(ordinal = 12)
-    private int orientation = 0;
+    private int orientation = PageOrientation.VERTICAL_PRINT.getValue();
 
     /**
      * 打印页码
@@ -112,7 +112,7 @@ public class ClientConfig extends BaseJsonConfig {
     private boolean cachePaperSetting = true;
 
     @Override
-    @JSONField
+    @JSONField(serialize = false)
     public String getName() {
         return "Client Configuration File";
     }

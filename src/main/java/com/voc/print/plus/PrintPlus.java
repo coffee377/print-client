@@ -62,11 +62,13 @@ public class PrintPlus {
      *
      * @param json JSONObject
      * @param uuid UUID
+     * @return 是否成功打印
      */
-    public void printWithJsonArg(JSONObject json, UUID uuid) {
+    public boolean printWithJsonArg(JSONObject json, UUID uuid) {
         PrintTray.getInstance().markPrintingTray();
-        this.initializingPrinting(json, uuid);
+        boolean result = this.initializingPrinting(json, uuid);
         PrintTray.getInstance().printOver();
+        return result;
     }
 
     /**
@@ -74,27 +76,32 @@ public class PrintPlus {
      *
      * @param jsonObject JSONObject
      * @param uuid       UUID
+     * @return 是否成功打印
      */
-    private void initializingPrinting(JSONObject jsonObject, UUID uuid) {
+
+    private boolean initializingPrinting(JSONObject jsonObject, UUID uuid) {
+        boolean success = false;
         try {
             String urlString = jsonObject.getString("url");
             if (StringUtils.isEmpty(urlString)) {
-                return;
+                return false;
             }
             URL url = new URL(urlString);
             this.printAsApplet(jsonObject, url, uuid);
+            success = true;
         } catch (Exception e) {
-            boolean showDialog = jsonObject.getBooleanValue("isShowDialog");
+            boolean showDialog = jsonObject.getBooleanValue("showDialog");
             if (showDialog) {
                 JOptionPane.showMessageDialog(null, " e=" + e.getMessage());
-            } else {
+            }
+            if (jsonObject.getBooleanValue("quietPrint")) {
                 if (uuid != null) {
-                    PrintClientServer.getInstance().onErrorOccurs(uuid, e.getMessage());
+                    PrintClientServer.getInstance().onErrorOccurs(uuid, -1, e.getMessage());
                 }
             }
             log.error(e.getMessage(), e);
         }
-
+        return success;
     }
 
     /**
@@ -121,9 +128,6 @@ public class PrintPlus {
         this.setUpCopies(clientConfig.getCopy());
         /*4.缓存页面设置*/
         this.cachePaperSetting(clientConfig.isCachePaperSetting());
-        if (uuid != null) {
-            PrintClientServer.getInstance().onBeforePrint(uuid);
-        }
         /*5.使用不显示applet打印对话框窗口*/
         this.print(false, clientConfig.getPrinterName());
         /*6.清除报表缓存*/
@@ -359,18 +363,8 @@ public class PrintPlus {
      */
     private void print(boolean isShowDialog, String printerName) throws PrinterException {
         if (this.pages != null) {
-//            try {
             PrintUtils.print(new SinglePageSet(this.pages), isShowDialog, printerName);
-//            } catch (Exception e) {
-//                if (StringUtils.isEmpty(e.getMessage())) {
-//                    return;
-//                }
-//
-//                log.error(e.getMessage(), e);
-//                JOptionPane.showMessageDialog(null, e.getMessage());
-//            }
         }
-
     }
 
 }

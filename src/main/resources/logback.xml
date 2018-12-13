@@ -48,7 +48,8 @@
         <appender-ref ref="fileAppender"/>
     </logger>
 
-    <logger name="com.voc" level="INFO" additivity="false">
+    <logger name="com.voc" level="debug" additivity="false">
+        <appender-ref ref="CONSOLE"/>
         <appender-ref ref="fileAppender"/>
     </logger>
 

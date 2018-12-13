@@ -1,8 +1,9 @@
 {
-	"copy":0,
-	"orientation":0,
-	"printerName":"",
+	"showDialog":false,
 	"quietPrint":true,
 	"proxy":false,
-	"serverURL":""
+	"copy":1,
+	"orientation":0,
+	"autoScaling":false,
+	"cachePaperSetting":true
 }
