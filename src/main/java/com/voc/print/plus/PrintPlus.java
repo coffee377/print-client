@@ -1,6 +1,5 @@
 package com.voc.print.plus;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.fr.base.*;
 import com.fr.general.Inter;
@@ -16,17 +15,17 @@ import com.fr.stable.StringUtils;
 import com.fr.stable.bridge.StableFactory;
 import com.fr.stable.unit.MM;
 import com.fr.xml.ReportXMLUtils;
+import com.voc.print.config.ClientConfig;
 import com.voc.print.config.PrintPlusConfiguration;
-import com.voc.print.config.ServerConfig;
 import com.voc.print.socket.PrintClientServer;
 import com.voc.print.util.ConfigUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
+import java.awt.print.PrinterException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -41,9 +40,9 @@ import java.util.regex.Pattern;
 public class PrintPlus {
     private static final String PREFIX = "finereport:";
     private static final String PAGE_NUMBER_SEPARATOR = "-";
-    private static final String IS_SHOW_DIALOG = "isShowDialog";
     private static final Pattern PAGE_PATTERN = Pattern.compile(PAGE_NUMBER_SEPARATOR);
     private static final Pattern INTEGER_PATTERN = Pattern.compile("^[1-9]\\d*$");
+    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().startsWith("win");
     private BaseSinglePagePrintable[] pages;
     private static PrintPlus singleton;
 
@@ -59,105 +58,16 @@ public class PrintPlus {
     }
 
     /**
-     * 打印
-     *
-     * @param args 打印参数
-     */
-    public void printWithArgs(String[] args) {
-        if (args.length == 0) {
-            JOptionPane.showMessageDialog(null, Inter.getLocText("FR-Engine_NativePrint_Invalid_Para"));
-        } else {
-            JSONObject var2 = null;
-            if (args.length == 1) {
-                var2 = this.getJsonObjectForModernBrowser(args[0], var2);
-            } else {
-                var2 = this.getJsonObjectForIE(args, var2);
-            }
-
-            if (var2 == null || StringUtils.isEmpty(var2.toString())) {
-                return;
-            }
-
-            this.printWithJsonArg(var2);
-
-        }
-    }
-
-    /**
      * JSON 参数打印
      *
-     * @param jsonObject JSONObject
+     * @param json JSONObject
+     * @param uuid UUID
      */
-    public void printWithJsonArg(JSONObject jsonObject) {
-        this.printWithJsonArg(jsonObject, null);
-    }
-
-    /**
-     * JSON 参数打印
-     *
-     * @param jsonObject JSONObject
-     * @param uuid       UUID
-     */
-    public void printWithJsonArg(JSONObject jsonObject, UUID uuid) {
+    public void printWithJsonArg(JSONObject json, UUID uuid) {
         PrintTray.getInstance().markPrintingTray();
-        if (StringUtils.isEmpty(jsonObject.getString(IS_SHOW_DIALOG))) {
-            this.init(jsonObject, uuid);
-        }
+        this.initializingPrinting(json, uuid);
         PrintTray.getInstance().printOver();
     }
-
-    /**
-     * 现代浏览器获取 JSON 对象
-     *
-     * @param param      String
-     * @param jsonObject JSONObject
-     * @return JSONObject
-     */
-    private JSONObject getJsonObjectForModernBrowser(String param, JSONObject jsonObject) {
-        String var3 = param.substring(PREFIX.length());
-
-        try {
-            String var4 = URLDecoder.decode(var3, "UTF-8");
-            jsonObject = JSON.parseObject(var4);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-
-        return jsonObject;
-    }
-
-    private JSONObject getJsonObjectForIE(String[] var1, JSONObject var2) {
-//        int var3 = var1.length;
-//        AtomicReference<StringBuffer> var4 = new AtomicReference<>(new StringBuffer());
-//
-//        try {
-//            for (int var5 = 0; var5 < var3; ++var5) {
-//                var4.get().append(var1[var5]);
-//            }
-//
-//            var2 = JSONObject.create();
-//            String var15 = var4.get().substring(PREFIX.length() + 1, var4.get().lastIndexOf("}"));
-//            String[] var6 = var15.split(",");
-//            String[] var7 = var6;
-//            int var8 = var6.length;
-//
-//            for (int var9 = 0; var9 < var8; ++var9) {
-//                String var10 = var7[var9];
-//                int var11 = var10.indexOf(":");
-//                if (var11 != -1) {
-//                    String var12 = var10.substring(0, var11);
-//                    String var13 = var10.substring(var11 + 1);
-//                    var2.put(var12, var13);
-//                }
-//            }
-//        } catch (Exception e) {
-//            log.error(e.getMessage(), e);
-//            PrintTray.getInstance().printOver();
-//        }
-
-        return var2;
-    }
-
 
     /**
      * 打印初始化
@@ -165,7 +75,7 @@ public class PrintPlus {
      * @param jsonObject JSONObject
      * @param uuid       UUID
      */
-    private void init(JSONObject jsonObject, UUID uuid) {
+    private void initializingPrinting(JSONObject jsonObject, UUID uuid) {
         try {
             String urlString = jsonObject.getString("url");
             if (StringUtils.isEmpty(urlString)) {
@@ -174,7 +84,14 @@ public class PrintPlus {
             URL url = new URL(urlString);
             this.printAsApplet(jsonObject, url, uuid);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, " e=" + e.getMessage());
+            boolean showDialog = jsonObject.getBooleanValue("isShowDialog");
+            if (showDialog) {
+                JOptionPane.showMessageDialog(null, " e=" + e.getMessage());
+            } else {
+                if (uuid != null) {
+                    PrintClientServer.getInstance().onErrorOccurs(uuid, e.getMessage());
+                }
+            }
             log.error(e.getMessage(), e);
         }
 
@@ -190,78 +107,105 @@ public class PrintPlus {
      */
     private void printAsApplet(JSONObject jsonObject, URL url, UUID uuid) throws Exception {
         this.initModule();
-        // TODO: 2018/12/12 0012 17:20 更新客户端配置文件
-//        ServerConfig.update(jsonObject);
-        ConfigUtils.saveOrUpdateClientConfig(jsonObject);
-//        PrintPlusConfiguration.getInstance().setClientConfig(null);
-        /*是否显示对话框*/
-        boolean isShowDialog = jsonObject.getBooleanValue("isShowDialog");
-        /*是否单表*/
-        boolean isSingleSheet = jsonObject.getBooleanValue("isSingleSheet");
-        /*打印页码*/
-        String index = jsonObject.getString("index");
+        /*1.打印配置*/
+        ClientConfig clientConfig = validatingConfig(jsonObject);
         InputStream inputStream = url.openStream();
         PageXmlProvider pageXmlOperator = StableFactory.getMarkedInstanceObjectFromClass("PageXmlOperator", PageXmlProvider.class);
         BaseSinglePagePrintable[] baseSinglePagePrintables = pageXmlOperator.deXmlizable4SinglePage(inputStream);
-//        PrintableSet printableSet = new SinglePageSet(baseSinglePagePrintables);
-//        PrintUtils.print(printableSet,true,"");
         BaseSingleReportCache reportCache = StableFactory.getMarkedInstanceObjectFromClass("SingleReportCache", BaseSingleReportCache.class);
-//        URL var11 = new URL(url.toString().replaceAll("op=fr_applet&cmd=print", "op=fr_applet&cmd=printover&printvalue=false"));
-//        var11.openStream();
-        /*打印页面校验*/
-        this.validIndex(index, baseSinglePagePrintables, url, reportCache);
-        /*根据客户端配置更新页面配置，静默打印应该页面根据给定的纸张自适应打印*/
-        if (!PrintPlusConfiguration.getInstance().getClientConfig().isQuietPrint()) {
-            this.updatePageSetting();
-        }
-        this.setUpCopies(ServerConfig.getInstance().getCopy());
-        this.cachePaperSetting(isSingleSheet);
+        /*2.打印页面校验*/
+        this.validIndex(clientConfig.getIndex(), baseSinglePagePrintables, url, reportCache);
+        /*2.根据客户端配置更新页面配置，静默打印应该页面根据给定的纸张自适应打印*/
+        this.updatePageSetting(clientConfig);
+        /*3.打印份数*/
+        this.setUpCopies(clientConfig.getCopy());
+        /*4.缓存页面设置*/
+        this.cachePaperSetting(clientConfig.isCachePaperSetting());
         if (uuid != null) {
             PrintClientServer.getInstance().onBeforePrint(uuid);
         }
-        this.print(false, ServerConfig.getInstance().getPrinterName());
+        /*5.使用不显示applet打印对话框窗口*/
+        this.print(false, clientConfig.getPrinterName());
+        /*6.清除报表缓存*/
         reportCache.clearReportPageCache();
-//        URL var12 = new URL(url.toString().replaceAll("op=fr_applet&cmd=print", "op=fr_applet&cmd=printover&printvalue=true"));
-//        var12.openStream();
+    }
+
+    /**
+     * 配置校验并返回最终打印的配置
+     *
+     * @param jsonObject JSONObject
+     * @return ClientConfig
+     */
+    private ClientConfig validatingConfig(JSONObject jsonObject) {
+        //页面传递过来配置
+        ClientConfig webConfig = ConfigUtils.read4JSONObject(jsonObject, ClientConfig.class);
+        if (webConfig.isQuietPrint()) {
+            //静默打印配置：打印机，纸张，方向，自适应
+            return webConfig;
+        }
+        //非静默打印时保存静默打印配置，以最后一次保存为主
+        else {
+            PrintPlusConfiguration instance = PrintPlusConfiguration.getInstance();
+            ClientConfig clientConfig = instance.getClientConfig();
+            if (!clientConfig.equals(webConfig)) {
+                instance.setClientConfig(webConfig);
+            }
+        }
+        return webConfig;
     }
 
     /**
      * 根据客户端配置更新页面相关设置
+     *
+     * @param config ClientConfig
      */
-    private void updatePageSetting() {
-        ServerConfig serverConfig = ServerConfig.getInstance();
+    private void updatePageSetting(ClientConfig config) {
         BaseSinglePagePrintable[] pagePrintTables = this.pages;
-
-        for (BaseSinglePagePrintable printable : pagePrintTables) {
-            PaperSettingProvider paperSetting = printable.getPaperSetting();
-            paperSetting.setOrientation(serverConfig.getOrientation());
-            String paperSizeText = serverConfig.getPaperSizeText();
-            PaperSize paperSize = new PaperSize();
-            MM width;
-            MM height;
-            if (paperSizeText.contains(",")) {
-                String[] sizeArr = paperSizeText.split(",\\s*");
-                width = new MM(Float.parseFloat(sizeArr[0]));
-                height = new MM(Float.parseFloat(sizeArr[1]));
-                paperSize = new PaperSize(width, height);
-            } else {
-                for (int i = 0; i < ReportConstants.PaperSizeNameSizeArray.length; ++i) {
-                    if (ReportConstants.PaperSizeNameSizeArray[i][0].toString().equals(paperSizeText)) {
-                        paperSize = (PaperSize) ReportConstants.PaperSizeNameSizeArray[i][1];
-                        break;
+        PaperSettingProvider paperSetting;
+        if (!config.isQuietPrint()) {
+            for (BaseSinglePagePrintable printable : pagePrintTables) {
+                paperSetting = printable.getPaperSetting();
+                String paperSizeText = config.getPaperSizeText();
+                PaperSize paperSize = new PaperSize();
+                MM width;
+                MM height;
+                if (paperSizeText.contains(",")) {
+                    String[] sizeArr = paperSizeText.split(",\\s*");
+                    width = new MM(Float.parseFloat(sizeArr[0]));
+                    height = new MM(Float.parseFloat(sizeArr[1]));
+                    paperSize = new PaperSize(width, height);
+                } else {
+                    for (int i = 0; i < ReportConstants.PaperSizeNameSizeArray.length; ++i) {
+                        if (ReportConstants.PaperSizeNameSizeArray[i][0].toString().equals(paperSizeText)) {
+                            paperSize = (PaperSize) ReportConstants.PaperSizeNameSizeArray[i][1];
+                            break;
+                        }
                     }
                 }
+                /*1.设置纸张*/
+                paperSetting.setPaperSize(paperSize);
+                /*2.设置打印方向*/
+                paperSetting.setOrientation(config.getOrientation());
+                MM top = new MM(config.getMarginTop());
+                MM left = new MM(config.getMarginLeft());
+                MM bottom = new MM(config.getMarginBottom());
+                MM right = new MM(config.getMarginRight());
+                Margin margin = new Margin(top, left, bottom, right);
+                /*3.设置边距*/
+                paperSetting.setMargin(margin);
             }
+        } else {
 
-            paperSetting.setPaperSize(paperSize);
-            MM top = new MM(serverConfig.getMarginTop());
-            MM left = new MM(serverConfig.getMarginLeft());
-            MM bottom = new MM(serverConfig.getMarginBottom());
-            MM right = new MM(serverConfig.getMarginRight());
-            Margin margin = new Margin(top, left, bottom, right);
-            paperSetting.setMargin(margin);
+            for (BaseSinglePagePrintable printable : pagePrintTables) {
+                paperSetting = printable.getPaperSetting();
+                /*1.设置纸张*/
+//                paperSetting.setPaperSize(paperSize);
+                /*2.设置打印方向*/
+                paperSetting.setOrientation(config.getOrientation());
+                /*3.设置边距*/
+//                paperSetting.setMargin(margin);
+            }
         }
-
     }
 
     /**
@@ -288,10 +232,9 @@ public class PrintPlus {
      * @throws Exception 异常
      */
     private void initModule() throws Exception {
-        if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
+        if (IS_WINDOWS) {
             UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
         }
-
         GeneralXMLTools.Object_Tokenizer = new ReportXMLUtils.ReportObjectTokenizer();
         GeneralXMLTools.Object_XML_Writer_Finder = new ReportXMLUtils.ReportObjectXMLWriterFinder();
         StableFactory.registerXMLDescription("Formula", new Formula());
@@ -352,7 +295,6 @@ public class PrintPlus {
                 }
             }
         }
-
     }
 
     /**
@@ -386,9 +328,9 @@ public class PrintPlus {
     @SuppressWarnings("unchecked")
     private void startModule(String className) {
         try {
-            Class var2 = Class.forName(className);
-            Method var3 = var2.getMethod("init", (Class[]) null);
-            var3.invoke(var2.newInstance());
+            Class clazz = Class.forName(className);
+            Method method = clazz.getMethod("init", (Class[]) null);
+            method.invoke(clazz.newInstance());
         } catch (Exception ignored) {
 
         }
@@ -410,33 +352,25 @@ public class PrintPlus {
     }
 
     /**
-     * 默认打印机打印
-     *
-     * @param isShowDialog 是否显示对话框
-     */
-    private void print(boolean isShowDialog) {
-        this.print(isShowDialog, null);
-    }
-
-    /**
      * 打印
      *
-     * @param isShowDialog 是否显示对话框
+     * @param isShowDialog 是否显示applet对话框
      * @param printerName  打印机名称
      */
-    private void print(boolean isShowDialog, String printerName) {
+    private void print(boolean isShowDialog, String printerName) throws PrinterException {
         if (this.pages != null) {
-            try {
-                PrintUtils.print(new SinglePageSet(this.pages), isShowDialog, printerName);
-            } catch (Exception e) {
-                if (StringUtils.isEmpty(e.getMessage())) {
-                    return;
-                }
-
-                log.error(e.getMessage(), e);
-                JOptionPane.showMessageDialog(null, e.getMessage());
-            }
+//            try {
+            PrintUtils.print(new SinglePageSet(this.pages), isShowDialog, printerName);
+//            } catch (Exception e) {
+//                if (StringUtils.isEmpty(e.getMessage())) {
+//                    return;
+//                }
+//
+//                log.error(e.getMessage(), e);
+//                JOptionPane.showMessageDialog(null, e.getMessage());
+//            }
         }
 
     }
+
 }

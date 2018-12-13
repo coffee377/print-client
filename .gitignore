@@ -43,3 +43,7 @@ gradle-app.setting
 dist
 .idea
 src/main/java/com/fr
+
+test*.txt
+
+**/**/rebel.xml

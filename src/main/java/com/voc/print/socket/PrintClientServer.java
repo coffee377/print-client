@@ -10,9 +10,10 @@ import com.corundumstudio.socketio.SocketIOServer;
 import com.fr.general.GeneralUtils;
 import com.fr.report.stable.ReportConstants;
 import com.fr.stable.BuildContext;
-import com.fr.stable.CodeUtils;
+import com.fr.stable.StringUtils;
 import com.voc.print.config.ClientConfig;
 import com.voc.print.config.PrintPlusConfiguration;
+import com.voc.print.config.Result;
 import com.voc.print.plus.PrintPlus;
 import com.voc.print.plus.PrintTray;
 import com.voc.print.util.ConfigUtils;
@@ -34,13 +35,14 @@ import static java.util.concurrent.Executors.newFixedThreadPool;
 @Slf4j
 public class PrintClientServer {
     private final static String HOST = "localhost";
-    private final static int PORT = 9092;
+    private final static int PORT = 10227;
     private final static String EVENT_NGINX_PROXY = "nginxProxy";
     private final static String EVENT_ALIVE_CHECKING = "aliveChecking";
     private final static String EVENT_GET_CONFIG_DATA = "getConfigData";
     private final static String EVENT_BEFORE_PRINT = "beforePrint";
     private final static String EVENT_START_PRINT = "startPrint";
     private final static String EVENT_AFTER_PRINT = "afterPrint";
+    private final static String EVENT_ERROR_OCCURS = "errorOccurs";
 
     private static final String IS_CUSTOM_PRINT = "isCustomPrint";
     private static final String QUIET_PRINT = "quietPrint";
@@ -66,43 +68,32 @@ public class PrintClientServer {
             PrintClientServer.this.socketIOServer.addDisconnectListener(
                     socketIOClient -> log.warn("与客户端[{}]失去连接", socketIOClient.getSessionId())
             );
-            PrintClientServer.this.socketIOServer.addEventListener(EVENT_NGINX_PROXY, ChatObject.class, (client, data, request) -> {
-                ClientConfig clientConfig = PrintPlusConfiguration.getInstance().getClientConfig();
-                JSONObject clientData = new JSONObject();
-                if (log.isDebugEnabled()) {
-                    log.debug("Nginx Proxy: {}", clientConfig.isProxy());
-                }
-                clientData.put("proxy", clientConfig.isProxy());
-                clientData.put("serverURL", clientConfig.getServerURL());
-                String encode = CodeUtils.cjkEncode(clientData.toString());
-                client.sendEvent(EVENT_NGINX_PROXY, new ChatObject(encode));
-            });
+//            PrintClientServer.this.socketIOServer.addEventListener(EVENT_NGINX_PROXY, ChatObject.class, (client, data, request) -> {
+//                ClientConfig clientConfig = PrintPlusConfiguration.getInstance().getClientConfig();
+//                JSONObject clientData = new JSONObject();
+//                if (log.isDebugEnabled()) {
+//                    log.debug("Nginx Proxy: {}", clientConfig.isProxy());
+//                }
+//                clientData.put("proxy", clientConfig.isProxy());
+//                clientData.put("serverURL", clientConfig.getServerURL());
+//                String encode = CodeUtils.cjkEncode(clientData.toString());
+//                client.sendEvent(EVENT_NGINX_PROXY, new ChatObject(encode));
+//            });
             /*存活检查事件*/
-            PrintClientServer.this.socketIOServer.addEventListener(EVENT_ALIVE_CHECKING, ChatObject.class,
-                    (client, data, request) -> client.sendEvent(EVENT_ALIVE_CHECKING, new ChatObject("")));
+//            PrintClientServer.this.socketIOServer.addEventListener(EVENT_ALIVE_CHECKING, ChatObject.class,
+//                    (client, data, request) -> client.sendEvent(EVENT_ALIVE_CHECKING));
             PrintClientServer.this.socketIOServer.addEventListener(EVENT_GET_CONFIG_DATA, ChatObject.class,
                     (client, data, request) -> {
                         JSONObject clientConfigData = this.getClientConfigData(data);
-                        String message = JSON.toJSONString(clientConfigData);
-                        client.sendEvent(EVENT_GET_CONFIG_DATA, new ChatObject(message));
+                        client.sendEvent(EVENT_GET_CONFIG_DATA, ChatObject.of(clientConfigData));
                     });
             PrintClientServer.this.socketIOServer.addEventListener(EVENT_START_PRINT,
                     ChatObject.class, (client, data, request) -> {
-                        JSONObject jsonObject = JSON.parseObject(data.getMessage());
-                        ClientConfig clientConfig = PrintPlusConfiguration.getInstance().getClientConfig();
-                        /*客户在页面设置了静默打印，保存到配置文件*/
-                        if (jsonObject.getBooleanValue(QUIET_PRINT) && !clientConfig.isQuietPrint()) {
-                            clientConfig.setQuietPrint(true);
-                            ConfigUtils.saveOrUpdateClientConfig(clientConfig);
-                        }
-                        if (jsonObject.getBooleanValue(IS_CUSTOM_PRINT)) {
-                            CustomPrintUtils.printWithJsonArg(jsonObject);
-                        } else {
-                            PrintPlus.getInstance().printWithJsonArg(jsonObject, client.getSessionId());
-                        }
+                        PrintPlus.getInstance().printWithJsonArg(data.getJSONMessage(), client.getSessionId());
                         client.sendEvent(EVENT_AFTER_PRINT);
                     });
-
+            PrintClientServer.this.socketIOServer.addEventListener(EVENT_ERROR_OCCURS,
+                    ChatObject.class, (client, data, request) -> client.sendEvent(EVENT_AFTER_PRINT));
             try {
                 Thread.sleep(Integer.MAX_VALUE);
             } catch (InterruptedException e) {
@@ -120,49 +111,35 @@ public class PrintClientServer {
      */
     private JSONObject getClientConfigData(ChatObject chatObject) throws JSONException {
         ClientConfig clientConfig = PrintPlusConfiguration.getInstance().getClientConfig();
-        JSONObject clientData = new JSONObject();
+        JSONObject clientData = JSON.parseObject(clientConfig.toString());
 
-        /*1.客户端可用打印机*/
-        JSONArray printers = new JSONArray();
-        String[] printerNameArray = GeneralUtils.getSystemPrinterNameArray();
-        JSONObject printer;
-        for (String printerName : printerNameArray) {
-            printer = new JSONObject();
-            printer.put("text", printerName);
-            printer.put("value", printerName);
-            printers.add(printer);
-        }
-        clientData.put("printers", printers);
+        //非静默打印,获取客户端配置
+        if (!chatObject.getJSONMessage().getBooleanValue(QUIET_PRINT)) {
+            /*1.客户端可用打印机*/
+            JSONArray printers = new JSONArray();
+            String[] printerNameArray = GeneralUtils.getSystemPrinterNameArray();
+            JSONObject printer;
+            for (String printerName : printerNameArray) {
+                printer = new JSONObject();
+                printer.put("text", printerName);
+                printer.put("value", printerName);
+                printers.add(printer);
+            }
+            clientData.put("printers", printers);
 
-        /*2.客户端可用页面纸张*/
-        JSONArray paperSizeNames = new JSONArray();
-        JSONObject paperSize;
-        for (int i = 0; i < ReportConstants.PaperSizeNameSizeArray.length; ++i) {
-            paperSize = new JSONObject();
-            String paperSizeName = ReportConstants.PaperSizeNameSizeArray[i][0].toString();
-            paperSize.put("text", paperSizeName);
-            paperSize.put("value", paperSizeName);
-            paperSizeNames.add(paperSize);
-        }
-        clientData.put("paperSizeNames", paperSizeNames);
-
-
-        JSONObject serverData = JSON.parseObject(chatObject.getMessage());
-        if (serverData.getBooleanValue(IS_CUSTOM_PRINT)) {
-            CustomPrintUtils.readConfigToData(clientData, serverData.getString(CUSTOM_FILE_URL));
+            /*2.客户端可用页面纸张*/
+            JSONArray paperSizeNames = new JSONArray();
+            JSONObject paperSize;
+            for (int i = 0; i < ReportConstants.PaperSizeNameSizeArray.length; ++i) {
+                paperSize = new JSONObject();
+                String paperSizeName = ReportConstants.PaperSizeNameSizeArray[i][0].toString();
+                paperSize.put("text", paperSizeName);
+                paperSize.put("value", paperSizeName);
+                paperSizeNames.add(paperSize);
+            }
+            clientData.put("paperSizeNames", paperSizeNames);
         }
 
-        /*3.是否静默打印*/
-        clientData.put("isQuietPrint", clientConfig.isQuietPrint());
-        if (log.isDebugEnabled()) {
-            log.debug("isQuietPrint:{}", clientConfig.isQuietPrint());
-        }
-
-        /*4.默认打印机名称*/
-        clientData.put("printerName", clientConfig.getPrinterName());
-        if (log.isDebugEnabled()) {
-            log.debug("printerName:{}", clientConfig.getPrinterName());
-        }
         return clientData;
     }
 
@@ -171,7 +148,13 @@ public class PrintClientServer {
         if (client != null) {
             client.sendEvent(EVENT_BEFORE_PRINT);
         }
+    }
 
+    public void onErrorOccurs(UUID uuid, String error) {
+        SocketIOClient client = this.socketIOServer.getClient(uuid);
+        if (StringUtils.isNotEmpty(error)) {
+            client.sendEvent(EVENT_ERROR_OCCURS, Result.failure("-1", error));
+        }
     }
 
     public static PrintClientServer getInstance() {
