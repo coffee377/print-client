@@ -24,7 +24,6 @@ public class ClientConfig extends BaseJsonConfig {
     @JSONField(ordinal = 1)
     private String printerName;
 
-
     /**
      * applet 是否显示对话框
      */

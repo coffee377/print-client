@@ -1,10 +1,13 @@
 package com.voc.print.socket;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
+import com.fr.general.GeneralUtils;
+import com.fr.report.stable.ReportConstants;
 import com.fr.stable.BuildContext;
 import com.fr.stable.StringUtils;
 import com.voc.print.config.ClientConfig;
@@ -30,7 +33,6 @@ import static java.util.concurrent.Executors.newFixedThreadPool;
 public class PrintClientServer {
     private final static String HOST = "localhost";
     private final static int PORT = 10227;
-    private final static String EVENT_NGINX_PROXY = "nginxProxy";
     private final static String EVENT_TYPE_CHECKING = "typeChecking";
     private final static String EVENT_GET_CONFIG_DATA = "getConfigData";
     private final static String EVENT_BEFORE_PRINT = "beforePrint";
@@ -39,9 +41,7 @@ public class PrintClientServer {
     private final static String EVENT_AFTER_PRINT = "afterPrint";
     private final static String EVENT_ERROR_OCCURS = "errorOccurs";
 
-    private static final String IS_CUSTOM_PRINT = "isCustomPrint";
     private static final String QUIET_PRINT = "quietPrint";
-    private static final String CUSTOM_FILE_URL = "customFileUrl";
 
     private SocketIOServer socketIOServer;
     private boolean start;
@@ -77,7 +77,7 @@ public class PrintClientServer {
                         }
                         /*打印预览*/
                         else {
-                            JSONObject previewConfig = new JSONObject();
+                            JSONObject previewConfig = this.getPreviewConfig(data);
                             client.sendEvent(EVENT_PREVIEW, previewConfig);
                         }
 
@@ -99,44 +99,58 @@ public class PrintClientServer {
         });
     }
 
-//    /**
-//     * 获取客户端配置
-//     *
-//     * @return JSONArray
-//     */
-//    private JSONObject getClientConfigData(ChatObject chatObject) throws JSONException {
-//        ClientConfig clientConfig = PrintPlusConfiguration.getInstance().getClientConfig();
-//        JSONObject clientData = JSON.parseObject(clientConfig.toString());
-//
-//        //非静默打印,获取客户端配置
-//        if (!chatObject.getJSONMessage().getBooleanValue(QUIET_PRINT)) {
-//            /*1.客户端可用打印机*/
-//            JSONArray printers = new JSONArray();
-//            String[] printerNameArray = GeneralUtils.getSystemPrinterNameArray();
-//            JSONObject printer;
-//            for (String printerName : printerNameArray) {
-//                printer = new JSONObject();
-//                printer.put("text", printerName);
-//                printer.put("value", printerName);
-//                printers.add(printer);
-//            }
-//            clientData.put("printers", printers);
-//
-//            /*2.客户端可用页面纸张*/
-//            JSONArray paperSizeNames = new JSONArray();
-//            JSONObject paperSize;
-//            for (int i = 0; i < ReportConstants.PaperSizeNameSizeArray.length; ++i) {
-//                paperSize = new JSONObject();
-//                String paperSizeName = ReportConstants.PaperSizeNameSizeArray[i][0].toString();
-//                paperSize.put("text", paperSizeName);
-//                paperSize.put("value", paperSizeName);
-//                paperSizeNames.add(paperSize);
-//            }
-//            clientData.put("paperSizeNames", paperSizeNames);
-//        }
-//
-//        return clientData;
-//    }
+    /**
+     * 获取客户端配置及报表页面信息
+     *
+     * @param data ChatObject
+     * @return JSONObject
+     */
+    private JSONObject getPreviewConfig(ChatObject data) {
+        JSONObject jsonMessage = data.getJSONMessage();
+
+        ClientConfig clientConfig = PrintPlusConfiguration.getInstance().getClientConfig();
+        JSONObject clientData = JSON.parseObject(clientConfig.toString());
+
+        //打印预览地址
+        String sb = jsonMessage.get("url") + "?op=fr_print&cmd=no_client&preview=true&sessionID=" + jsonMessage.get("sessionID");
+        clientData.put("previewUrl", sb);
+
+        //根据报表获取后设置
+        clientConfig.setCopy(1);
+        clientConfig.setIndex(null);
+        clientConfig.setQuietPrint(false);
+        clientConfig.setPaperSizeText("");
+        clientConfig.setMarginTop(null);
+        clientConfig.setMarginBottom(null);
+        clientConfig.setMarginLeft(null);
+        clientConfig.setMarginRight(null);
+
+        /*1.客户端可用打印机*/
+        JSONArray printers = new JSONArray();
+        String[] printerNameArray = GeneralUtils.getSystemPrinterNameArray();
+        JSONObject printer;
+        for (String printerName : printerNameArray) {
+            printer = new JSONObject();
+            printer.put("text", printerName);
+            printer.put("value", printerName);
+            printers.add(printer);
+        }
+        clientData.put("printers", printers);
+
+        /*2.客户端可用页面纸张*/
+        JSONArray paperSizeNames = new JSONArray();
+        JSONObject paperSize;
+        for (int i = 0; i < ReportConstants.PaperSizeNameSizeArray.length; ++i) {
+            paperSize = new JSONObject();
+            String paperSizeName = ReportConstants.PaperSizeNameSizeArray[i][0].toString();
+            paperSize.put("text", paperSizeName);
+            paperSize.put("value", paperSizeName);
+            paperSizeNames.add(paperSize);
+        }
+        clientData.put("paperSizeNames", paperSizeNames);
+
+        return clientData;
+    }
 
     public void onErrorOccurs(UUID uuid, int errorCode, String errorMessage) {
         SocketIOClient client = this.socketIOServer.getClient(uuid);
