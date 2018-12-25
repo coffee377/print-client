@@ -45,5 +45,5 @@ dist
 src/main/java/com/fr
 
 test*.txt
-
+config/PrintPlus.json
 **/**/rebel.xml

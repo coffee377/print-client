@@ -2,12 +2,13 @@ package com.voc.print.plus;
 
 import com.fr.general.IOUtils;
 import com.fr.general.Inter;
-import com.voc.print.socket.PrintClientServer;
 import com.fr.stable.CoreGraphHelper;
+import com.voc.print.socket.PrintClientServer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.text.MessageFormat;
 import java.util.concurrent.ExecutorService;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
@@ -57,7 +58,7 @@ public class PrintTray {
     private void showTray() {
         if (SystemTray.isSupported()) {
             SystemTray systemTray = SystemTray.getSystemTray();
-            String trayIconName = Inter.getLocText("printer.client.name");
+            String trayIconName = MessageFormat.format(Inter.getLocText("printer.client.name"), "v1.1.1");
             PopupMenu popupMenu = new PopupMenu();
             MenuItem menuSetting = new MenuItem(Inter.getLocText("menu.setting"));
             menuSetting.addActionListener(e -> {

@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'com.voc'
-version '1.1.0'
+version '1.1.1'
 
 ext {
 
@@ -22,7 +22,7 @@ ext {
     fastjsonVersion = '1.2.44'
     classPathPrefix = 'lib'
     addClassPath = true
-    
+
     if (rep == "company") {
         nexusUrl = 'http://192.168.44.155'
         nexusPublicRepository = 'nexus/content/groups/public/'
@@ -125,32 +125,27 @@ task copyZipResource() {
         copy {
             from(projectDir) {
                 include(
-//                        'README.MD',
+                        'README.MD',
+                        'CHANGELOG.MD',
                         'PrintPlus.ico',
                         'PrintPlus.png'
                 )
             }
             into("build/dist")
         }
+        copy {
+            from("$projectDir/bin") {
+                include('startup.bat', 'import.bat')
+            }
+            into("build/dist/bin")
+        }
 //        copy {
-//            from("$projectDir/bin") {
-//                include('startup.bat')
+//            from("$projectDir/src/main/resources/com/voc/print/plus/js") {
+//                include('print.min.js')
 //            }
-//            into("build/dist/bin")
+//            into("build/dist/js")
+//            rename('print.min.js', 'print.js')
 //        }
-        copy {
-            from("$projectDir/config") {
-//                include('startup.bat')
-            }
-            into("build/dist/config")
-        }
-        copy {
-            from("$projectDir/src/main/resources/com/voc/print/plus/js") {
-                include('print.min.js')
-            }
-            into("build/dist/js")
-            rename('print.min.js', 'print.js')
-        }
     }
 }
 

@@ -17,6 +17,7 @@ import com.fr.stable.unit.MM;
 import com.fr.xml.ReportXMLUtils;
 import com.voc.print.config.ClientConfig;
 import com.voc.print.config.PrintPlusConfiguration;
+import com.voc.print.config.Result;
 import com.voc.print.socket.PrintClientServer;
 import com.voc.print.util.ConfigUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -38,11 +39,12 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 public class PrintPlus {
-    private static final String PREFIX = "finereport:";
     private static final String PAGE_NUMBER_SEPARATOR = "-";
     private static final Pattern PAGE_PATTERN = Pattern.compile(PAGE_NUMBER_SEPARATOR);
     private static final Pattern INTEGER_PATTERN = Pattern.compile("^[1-9]\\d*$");
     private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().startsWith("win");
+    public static final String QUIET_PRINT = "quietPrint";
+    public static final String SHOW_DIALOG = "showDialog";
     private BaseSinglePagePrintable[] pages;
     private static PrintPlus singleton;
 
@@ -62,13 +64,11 @@ public class PrintPlus {
      *
      * @param json JSONObject
      * @param uuid UUID
-     * @return 是否成功打印
      */
-    public boolean printWithJsonArg(JSONObject json, UUID uuid) {
+    public void printWithJsonArg(JSONObject json, UUID uuid) {
         PrintTray.getInstance().markPrintingTray();
-        boolean result = this.initializingPrinting(json, uuid);
+        this.initializingPrinting(json, uuid);
         PrintTray.getInstance().printOver();
-        return result;
     }
 
     /**
@@ -76,32 +76,27 @@ public class PrintPlus {
      *
      * @param jsonObject JSONObject
      * @param uuid       UUID
-     * @return 是否成功打印
      */
-
-    private boolean initializingPrinting(JSONObject jsonObject, UUID uuid) {
-        boolean success = false;
+    private void initializingPrinting(JSONObject jsonObject, UUID uuid) {
         try {
             String urlString = jsonObject.getString("url");
             if (StringUtils.isEmpty(urlString)) {
-                return false;
+                return;
             }
             URL url = new URL(urlString);
             this.printAsApplet(jsonObject, url, uuid);
-            success = true;
         } catch (Exception e) {
-            boolean showDialog = jsonObject.getBooleanValue("showDialog");
+            boolean showDialog = jsonObject.getBooleanValue(SHOW_DIALOG);
             if (showDialog) {
                 JOptionPane.showMessageDialog(null, " e=" + e.getMessage());
             }
-            if (jsonObject.getBooleanValue("quietPrint")) {
+            if (jsonObject.getBooleanValue(QUIET_PRINT)) {
                 if (uuid != null) {
                     PrintClientServer.getInstance().onErrorOccurs(uuid, -1, e.getMessage());
                 }
             }
             log.error(e.getMessage(), e);
         }
-        return success;
     }
 
     /**
@@ -128,8 +123,16 @@ public class PrintPlus {
         this.setUpCopies(clientConfig.getCopy());
         /*4.缓存页面设置*/
         this.cachePaperSetting(clientConfig.isCachePaperSetting());
+        /*打印前事件*/
+        if (uuid != null) {
+            PrintClientServer.getInstance().onBeforePrint(uuid);
+        }
         /*5.使用不显示applet打印对话框窗口*/
-        this.print(false, clientConfig.getPrinterName());
+        Optional<Result> print = this.print(false, clientConfig.getPrinterName());
+        /*打印后事件*/
+        if (uuid != null && print.isPresent()) {
+            PrintClientServer.getInstance().oneAfterPrint(uuid, print.get());
+        }
         /*6.清除报表缓存*/
         reportCache.clearReportPageCache();
     }
@@ -360,11 +363,20 @@ public class PrintPlus {
      *
      * @param isShowDialog 是否显示applet对话框
      * @param printerName  打印机名称
+     * @return Optional<Result>  打印结果
      */
-    private void print(boolean isShowDialog, String printerName) throws PrinterException {
+    private Optional<Result> print(boolean isShowDialog, String printerName) {
+        Result result = null;
         if (this.pages != null) {
-            PrintUtils.print(new SinglePageSet(this.pages), isShowDialog, printerName);
+            try {
+                PrintUtils.print(new SinglePageSet(this.pages), isShowDialog, printerName);
+                result = Result.success("打印成功");
+            } catch (PrinterException e) {
+                log.error(e.getMessage());
+                result = Result.failure(1, "打印失败", e.getMessage());
+            }
         }
+        return Optional.ofNullable(result);
     }
 
 }

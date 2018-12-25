@@ -54,8 +54,16 @@ public class Result implements Serializable {
         return item;
     }
 
+    public static Result success(String message,Object data) {
+        return of(true, 0, message, data);
+    }
+
+    public static Result success(String message) {
+        return success(message,null);
+    }
+
     public static Result success(Object data) {
-        return of(true, 0, "SUCCESS", data);
+        return success("SUCCESS", data);
     }
 
     public static Result success() {

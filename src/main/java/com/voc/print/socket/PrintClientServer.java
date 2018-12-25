@@ -34,7 +34,6 @@ public class PrintClientServer {
     private final static String HOST = "localhost";
     private final static int PORT = 10227;
     private final static String EVENT_TYPE_CHECKING = "typeChecking";
-    private final static String EVENT_GET_CONFIG_DATA = "getConfigData";
     private final static String EVENT_BEFORE_PRINT = "beforePrint";
     private final static String EVENT_PRINT = "print";
     private final static String EVENT_PREVIEW = "preview";
@@ -63,10 +62,8 @@ public class PrintClientServer {
             PrintClientServer.this.socketIOServer.addDisconnectListener(
                     socketIOClient -> log.warn("与客户端[{}]失去连接", socketIOClient.getSessionId())
             );
+            //事件类型检测
             PrintClientServer.this.socketIOServer.addEventListener(EVENT_TYPE_CHECKING, ChatObject.class,
-                    (client, data, request) -> client.sendEvent(EVENT_BEFORE_PRINT)
-            );
-            PrintClientServer.this.socketIOServer.addEventListener(EVENT_BEFORE_PRINT, ChatObject.class,
                     (client, data, request) -> {
                         JSONObject jsonMessage = data.getJSONMessage();
                         /*静默打印*/
@@ -81,13 +78,11 @@ public class PrintClientServer {
                             client.sendEvent(EVENT_PREVIEW, previewConfig);
                         }
 
-                    });
+                    }
+            );
             PrintClientServer.this.socketIOServer.addEventListener(EVENT_PRINT,
                     ChatObject.class, (client, data, request) -> {
-                        boolean success = PrintPlus.getInstance().printWithJsonArg(data.getJSONMessage(),
-                                client.getSessionId());
-                        client.sendEvent(EVENT_AFTER_PRINT, success ? Result.success("打印成功")
-                                : Result.failure(1, "打印失败"));
+                        PrintPlus.getInstance().printWithJsonArg(data.getJSONMessage(), client.getSessionId());
                     });
             try {
                 Thread.sleep(Integer.MAX_VALUE);
@@ -152,6 +147,38 @@ public class PrintClientServer {
         return clientData;
     }
 
+    /**
+     * 打印前触发事件
+     *
+     * @param uuid UUID
+     */
+    public void onBeforePrint(UUID uuid) {
+        SocketIOClient client = this.socketIOServer.getClient(uuid);
+        if (client != null) {
+            client.sendEvent(EVENT_BEFORE_PRINT);
+        }
+    }
+
+    /**
+     * 打印前触发事件
+     *
+     * @param uuid   UUID
+     * @param result 打印结果
+     */
+    public void oneAfterPrint(UUID uuid, Result result) {
+        SocketIOClient client = this.socketIOServer.getClient(uuid);
+        if (client != null) {
+            client.sendEvent(EVENT_AFTER_PRINT, result);
+        }
+    }
+
+    /**
+     * 打错报错触发事件
+     *
+     * @param uuid         UUID
+     * @param errorCode    错误编码
+     * @param errorMessage 错误信息
+     */
     public void onErrorOccurs(UUID uuid, int errorCode, String errorMessage) {
         SocketIOClient client = this.socketIOServer.getClient(uuid);
         if (StringUtils.isNotEmpty(errorMessage)) {

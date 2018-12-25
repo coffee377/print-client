@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <install4j version="6.1.2" transformSequenceNumber="5">
   <directoryPresets config="../build/dist" />
-  <application name="Print Plus" distributionSourceDir="" applicationId="1141-8780-9806-1482" mediaDir="../dist/instal4j6/${compiler:sys.version}" mediaFilePattern="${compiler:sys.fullName}_${compiler:sys.platform}_${compiler:sys.version}" compression="6" lzmaCompression="false" pack200Compression="false" excludeSignedFromPacking="true" commonExternalFiles="false" createMd5Sums="true" shrinkRuntime="true" shortName="PrintX" publisher="" publisherWeb="" version="1.0.1" allPathsRelative="true" backupOnSave="false" autoSave="false" convertDotsToUnderscores="true" macSignature="????" macVolumeId="99c2b524d18361a5" javaMinVersion="1.8" javaMaxVersion="1.8" allowBetaVM="false" jdkMode="runtimeJre" jdkName="">
+  <application name="Print Plus" distributionSourceDir="" applicationId="1141-8780-9806-1482" mediaDir="../dist/instal4j6/${compiler:sys.version}" mediaFilePattern="${compiler:sys.fullName}_${compiler:sys.platform}_${compiler:sys.version}" compression="6" lzmaCompression="false" pack200Compression="false" excludeSignedFromPacking="true" commonExternalFiles="false" createMd5Sums="true" shrinkRuntime="true" shortName="PrintX" publisher="" publisherWeb="" version="1.1.1" allPathsRelative="true" backupOnSave="false" autoSave="false" convertDotsToUnderscores="true" macSignature="????" macVolumeId="99c2b524d18361a5" javaMinVersion="1.8" javaMaxVersion="1.8" allowBetaVM="false" jdkMode="runtimeJre" jdkName="">
     <languages skipLanguageSelection="false" languageSelectionInPrincipalLanguage="false">
       <principalLanguage id="zh_CN" customLocalizationFile="../src/main/resources/com/voc/print/plus/locale/message_zh_CN.properties" />
       <additionalLanguages>
@@ -26,7 +26,6 @@
     <mountPoints>
       <mountPoint id="22" root="" location="lib" mode="755" />
       <mountPoint id="23" root="" location="bin" mode="755" />
-      <mountPoint id="149" root="" location="config" mode="755" />
       <mountPoint id="24" root="" location="" mode="755" />
     </mountPoints>
     <entries>
@@ -35,11 +34,6 @@
       </dirEntry>
       <dirEntry mountPoint="23" file="../build/dist/bin" overwriteMode="4" shared="false" fileMode="644" uninstallMode="0" overrideFileMode="false" overrideOverwriteMode="false" overrideUninstallMode="false" entryMode="direct" subDirectory="bin" excludeSuffixes="" dirMode="755" overrideDirMode="false">
         <exclude />
-      </dirEntry>
-      <dirEntry mountPoint="149" file="../build/dist/config" overwriteMode="4" shared="false" fileMode="644" uninstallMode="0" overrideFileMode="false" overrideOverwriteMode="false" overrideUninstallMode="false" entryMode="direct" subDirectory="config" excludeSuffixes="" dirMode="755" overrideDirMode="false">
-        <exclude>
-          <entry location="install4j6.install4j" fileType="regular" />
-        </exclude>
       </dirEntry>
       <dirEntry mountPoint="24" file="../build/dist" overwriteMode="4" shared="false" fileMode="644" uninstallMode="0" overrideFileMode="false" overrideOverwriteMode="false" overrideUninstallMode="false" entryMode="direct" subDirectory="dist" excludeSuffixes="" dirMode="755" overrideDirMode="false">
         <exclude>
@@ -85,10 +79,10 @@
       <iconImageFiles />
     </launcher>
   </launchers>
-  <installerGui installerType="1" addOnAppId="" suggestPreviousLocations="false" autoUpdateDescriptorUrl="" useAutoUpdateBaseUrl="false" autoUpdateBaseUrl="">
+  <installerGui installerType="1" addOnAppId="" suggestPreviousLocations="true" autoUpdateDescriptorUrl="" useAutoUpdateBaseUrl="false" autoUpdateBaseUrl="">
     <staticMembers script="" />
     <customCode>
-      <archive location="../build/dist/bin/PrintPlus.jar" />
+      <scanDirectory location="../build/dist/bin" />
       <scanDirectory location="../build/dist/lib" />
     </customCode>
     <autoUpdate useMinUpdatableVersion="false" minUpdatableVersion="" useMaxUpdatableVersion="false" maxUpdatableVersion="">
@@ -254,123 +248,6 @@
                 <initScript />
                 <visibilityScript />
               </formComponent>
-              <group name="" id="97" customizedId="" beanClass="com.install4j.runtime.beans.groups.HorizontalFormComponentGroup" enabled="true" commentSet="true" comment="" actionElevationType="inherit">
-                <serializedBean>
-                  <java class="java.beans.XMLDecoder">
-                    <object class="com.install4j.runtime.beans.groups.HorizontalFormComponentGroup">
-                      <void property="makeSameHeight">
-                        <boolean>true</boolean>
-                      </void>
-                    </object>
-                  </java>
-                </serializedBean>
-                <beans>
-                  <formComponent name="nginxProxy" id="100" customizedId="" beanClass="com.install4j.runtime.beans.formcomponents.CheckboxComponent" enabled="true" commentSet="true" comment="" insetTop="" insetLeft="" insetBottom="" insetRight="" resetInitOnPrevious="false">
-                    <serializedBean>
-                      <java class="java.beans.XMLDecoder">
-                        <object class="com.install4j.runtime.beans.formcomponents.CheckboxComponent" id="CheckboxComponent0">
-                          <void property="checkboxText">
-                            <string>${i18n:nginx.proxy.name}</string>
-                          </void>
-                          <void property="coupledComponentIds">
-                            <void method="add">
-                              <string>103</string>
-                            </void>
-                          </void>
-                          <void property="helpText">
-                            <string>${i18n:nginx.proxy.helpText}</string>
-                          </void>
-                          <void property="selectionScript">
-                            <object class="com.install4j.api.beans.ScriptProperty">
-                              <void property="value">
-                                <string>context.setVariable("proxy",selected);</string>
-                              </void>
-                            </object>
-                          </void>
-                          <void property="variableName">
-                            <string>proxy</string>
-                          </void>
-                        </object>
-                      </java>
-                    </serializedBean>
-                    <initScript />
-                    <visibilityScript />
-                  </formComponent>
-                  <formComponent name="serverURL" id="103" customizedId="" beanClass="com.install4j.runtime.beans.formcomponents.TextfieldComponent" enabled="true" commentSet="false" comment="" insetTop="" insetLeft="" insetBottom="" insetRight="" resetInitOnPrevious="false">
-                    <serializedBean>
-                      <java class="java.beans.XMLDecoder">
-                        <object class="com.install4j.runtime.beans.formcomponents.TextfieldComponent">
-                          <void property="checkIfEmpty">
-                            <boolean>true</boolean>
-                          </void>
-                          <void property="helpText">
-                            <string>${i18n:nginx.serverURL.helpText}</string>
-                          </void>
-                          <void property="initialText">
-                            <string>http://192.168.88.235:80</string>
-                          </void>
-                          <void property="inputVerifier">
-                            <object class="com.install4j.api.beans.ScriptProperty">
-                              <void property="value">
-                                <string>import java.util.regex.Pattern;
-
-Pattern compile = Pattern.compile(context.getMessage("nginx.serverURL.pattern"));
-if (!compile.matcher(text).matches()) {
-    Util.showWarningMessage(context.getMessage("nginx.serverURL.pattern.checkInformation"));
-    return false;
-}
-context.setVariable("serverURL",text);
-return true;</string>
-                              </void>
-                            </object>
-                          </void>
-                          <void property="keyListener">
-                            <object class="com.install4j.api.beans.ScriptProperty">
-                              <void property="value">
-                                <string />
-                              </void>
-                            </object>
-                          </void>
-                          <void property="labelText">
-                            <string>${i18n:nginx.serverURL.name}</string>
-                          </void>
-                          <void property="variableName">
-                            <string>serverURL</string>
-                          </void>
-                        </object>
-                      </java>
-                    </serializedBean>
-                    <initScript />
-                    <visibilityScript />
-                  </formComponent>
-                </beans>
-              </group>
-              <formComponent name="quietPrint" id="108" customizedId="" beanClass="com.install4j.runtime.beans.formcomponents.CheckboxComponent" enabled="true" commentSet="false" comment="" insetTop="" insetLeft="" insetBottom="" insetRight="" resetInitOnPrevious="false">
-                <serializedBean>
-                  <java class="java.beans.XMLDecoder">
-                    <object class="com.install4j.runtime.beans.formcomponents.CheckboxComponent">
-                      <void property="checkboxText">
-                        <string>${i18n:printer.client.quitePrint}</string>
-                      </void>
-                      <void property="helpText">
-                        <string>${i18n:printer.client.quitePrint.helpText}</string>
-                      </void>
-                      <void property="selectionScript">
-                        <object class="com.install4j.api.beans.ScriptProperty">
-                          <void property="value">
-                            <string>context.setVariable("quietPrint",selected);</string>
-                          </void>
-                        </object>
-                      </void>
-                      <void property="variableName">
-                        <string>quietPrint</string>
-                      </void>
-                    </object>
-                  </java>
-                </serializedBean>
-                <initScript />
-                <visibilityScript />
-              </formComponent>
             </formComponents>
           </screen>
           <screen name="" id="8" customizedId="" beanClass="com.install4j.runtime.beans.screens.InstallationScreen" enabled="true" commentSet="false" comment="" actionElevationType="inherit" rollbackBarrier="true" backButton="2" finishScreen="false" wizardIndexChangeType="unchanged" wizardIndexKey="">
@@ -450,22 +327,22 @@ return true;</string>
             <condition />
             <validation />
             <preActivation />
-            <postActivation>import com.voc.print.config.ClientConfig;
-import com.voc.print.util.ConfigUtils;
+            <postActivation>//import com.voc.print.config.ClientConfig;
+//import com.voc.print.util.ConfigUtils;
 
 //读取配置文件
-File configFile = new File(context.getInstallationDirectory(), context.getCompilerVariable("configFile"));
-ClientConfig clientConfig = ConfigUtils.readFromFile(configFile);
+//File configFile = new File(context.getInstallationDirectory(), context.getCompilerVariable("configFile"));
+//ClientConfig clientConfig = ConfigUtils.readFromFile(configFile);
 //设置是否代理
-Boolean proxy = (Boolean) context.getVariable("proxy");
-String serverURL = (String) context.getVariable("serverURL");
-Boolean quietPrint = (Boolean) context.getVariable("quietPrint");
-clientConfig.setProxy(proxy);
-clientConfig.setServerURL(serverURL);
-clientConfig.setQuietPrint(quietPrint);
+//Boolean proxy = (Boolean) context.getVariable("proxy");
+//String serverURL = (String) context.getVariable("serverURL");
+//Boolean quietPrint = (Boolean) context.getVariable("quietPrint");
+//clientConfig.setProxy(proxy);
+//clientConfig.setServerURL(serverURL);
+//clientConfig.setQuietPrint(quietPrint);
 //Util.showMessage(clientConfig.toString());
 //写配置文件
-ConfigUtils.saveOrUpdateClientConfig(configFile,clientConfig);</postActivation>
+//ConfigUtils.saveOrUpdateClientConfig(configFile,clientConfig);</postActivation>
             <actions />
             <formComponents />
           </screen>
