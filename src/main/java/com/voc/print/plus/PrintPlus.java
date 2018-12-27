@@ -162,6 +162,41 @@ public class PrintPlus {
     }
 
     /**
+     * 获取页面尺寸
+     *
+     * @param paperSizeText 尺寸文本
+     * @return PaperSize
+     */
+    private PaperSize getPaperSize(String paperSizeText) {
+        PaperSize paperSize = new PaperSize();
+        MM width;
+        MM height;
+        if (paperSizeText.contains(",")) {
+            String[] sizeArr = paperSizeText.split(",\\s*");
+            width = new MM(Float.parseFloat(sizeArr[0]));
+            height = new MM(Float.parseFloat(sizeArr[1]));
+            paperSize = new PaperSize(width, height);
+        } else {
+            for (int i = 0; i < ReportConstants.PaperSizeNameSizeArray.length; ++i) {
+                if (ReportConstants.PaperSizeNameSizeArray[i][0].toString().equals(paperSizeText)) {
+                    paperSize = (PaperSize) ReportConstants.PaperSizeNameSizeArray[i][1];
+                    break;
+                }
+            }
+        }
+        return paperSize;
+    }
+
+
+    private Margin getMargin(ClientConfig config) {
+        MM top = new MM(config.getMarginTop());
+        MM left = new MM(config.getMarginLeft());
+        MM bottom = new MM(config.getMarginBottom());
+        MM right = new MM(config.getMarginRight());
+        return new Margin(top, left, bottom, right);
+    }
+
+    /**
      * 根据客户端配置更新页面相关设置
      *
      * @param config ClientConfig
@@ -169,50 +204,38 @@ public class PrintPlus {
     private void updatePageSetting(ClientConfig config) {
         BaseSinglePagePrintable[] pagePrintTables = this.pages;
         PaperSettingProvider paperSetting;
+
+        //打印预览
         if (!config.isQuietPrint()) {
             for (BaseSinglePagePrintable printable : pagePrintTables) {
                 paperSetting = printable.getPaperSetting();
+                /*1.设置纸张*/
                 String paperSizeText = config.getPaperSizeText();
-                PaperSize paperSize = new PaperSize();
-                MM width;
-                MM height;
-                if (paperSizeText.contains(",")) {
-                    String[] sizeArr = paperSizeText.split(",\\s*");
-                    width = new MM(Float.parseFloat(sizeArr[0]));
-                    height = new MM(Float.parseFloat(sizeArr[1]));
-                    paperSize = new PaperSize(width, height);
-                } else {
-                    for (int i = 0; i < ReportConstants.PaperSizeNameSizeArray.length; ++i) {
-                        if (ReportConstants.PaperSizeNameSizeArray[i][0].toString().equals(paperSizeText)) {
-                            paperSize = (PaperSize) ReportConstants.PaperSizeNameSizeArray[i][1];
-                            break;
-                        }
-                    }
-                }
-                /*1.设置纸张*/
-                paperSetting.setPaperSize(paperSize);
-                /*2.设置打印方向*/
-                paperSetting.setOrientation(config.getOrientation());
-                MM top = new MM(config.getMarginTop());
-                MM left = new MM(config.getMarginLeft());
-                MM bottom = new MM(config.getMarginBottom());
-                MM right = new MM(config.getMarginRight());
-                Margin margin = new Margin(top, left, bottom, right);
-                /*3.设置边距*/
-                paperSetting.setMargin(margin);
-            }
-        } else {
-
-            for (BaseSinglePagePrintable printable : pagePrintTables) {
-                paperSetting = printable.getPaperSetting();
-                /*1.设置纸张*/
-//                paperSetting.setPaperSize(paperSize);
+                paperSetting.setPaperSize(getPaperSize(paperSizeText));
                 /*2.设置打印方向*/
                 paperSetting.setOrientation(config.getOrientation());
                 /*3.设置边距*/
-//                paperSetting.setMargin(margin);
+                paperSetting.setMargin(getMargin(config));
             }
         }
+
+        //静默打印，默认A4页面
+        if (config.isQuietPrint()) {
+            // TODO: 2018/12/27 0027 17:55 静默打印，默认A4页面
+            for (BaseSinglePagePrintable printable : pagePrintTables) {
+                paperSetting = printable.getPaperSetting();
+                /*1.设置纸张(width,height) width <= height, 否则页面打印存在问题*/
+                paperSetting.setPaperSize(getPaperSize("210,297"));
+                /*2.设置打印方向：使用报表设计时的方向*/
+                /*3.设置边距：使用报表设计时的边距*/
+            }
+        }
+
+        //静默打印 && 自动缩放
+        if (config.isQuietPrint() && config.isAutoScaling()) {
+            // TODO: 2018/12/27 0027 17:55 静默打印 && 自动缩放
+        }
+
     }
 
     /**
