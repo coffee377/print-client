@@ -128,7 +128,7 @@ public class PrintPlus {
             PrintClientServer.getInstance().onBeforePrint(uuid);
         }
         /*5.使用不显示applet打印对话框窗口*/
-        Optional<Result> print = this.print(false, clientConfig.getPrinterName());
+        Optional<Result> print = this.print(true, clientConfig.getPrinterName());
         /*打印后事件*/
         if (uuid != null && print.isPresent()) {
             PrintClientServer.getInstance().oneAfterPrint(uuid, print.get());
@@ -173,8 +173,8 @@ public class PrintPlus {
         MM height;
         if (paperSizeText.contains(",")) {
             String[] sizeArr = paperSizeText.split(",\\s*");
-            width = new MM(Float.parseFloat(sizeArr[0]));
-            height = new MM(Float.parseFloat(sizeArr[1]));
+            width = new MM(Math.min(Float.parseFloat(sizeArr[0]), Float.parseFloat(sizeArr[1])));
+            height = new MM(Math.max(Float.parseFloat(sizeArr[0]), Float.parseFloat(sizeArr[1])));
             paperSize = new PaperSize(width, height);
         } else {
             for (int i = 0; i < ReportConstants.PaperSizeNameSizeArray.length; ++i) {
@@ -220,20 +220,31 @@ public class PrintPlus {
         }
 
         //静默打印，默认A4页面
-        if (config.isQuietPrint()) {
+//        if (config.isQuietPrint()) {
             // TODO: 2018/12/27 0027 17:55 静默打印，默认A4页面
+//            for (BaseSinglePagePrintable printable : pagePrintTables) {
+//                paperSetting = printable.getPaperSetting();
+            /*1.设置纸张(width,height) width <= height, 否则页面打印存在问题*/
+//                paperSetting.setPaperSize(getPaperSize("210,297"));
+            /*2.设置打印方向：使用报表设计时的方向*/
+            /*3.设置边距：使用报表设计时的边距*/
+//            }
+//        }
+
+        //静默打印 && 自动缩放 && A4
+        if (config.isQuietPrint() && config.isAutoScaling()) {
+            // TODO: 2018/12/27 0027 17:55 静默打印 && 自动缩放 && 默认A4页面
             for (BaseSinglePagePrintable printable : pagePrintTables) {
                 paperSetting = printable.getPaperSetting();
                 /*1.设置纸张(width,height) width <= height, 否则页面打印存在问题*/
-                paperSetting.setPaperSize(getPaperSize("210,297"));
+                PaperSize paperSize = paperSetting.getPaperSize();
+                if (paperSize.equals(PaperSize.PAPERSIZE_A4)) {
+                    paperSetting.setPaperSize(PaperSize.PAPERSIZE_A4);
+                }
+
                 /*2.设置打印方向：使用报表设计时的方向*/
                 /*3.设置边距：使用报表设计时的边距*/
             }
-        }
-
-        //静默打印 && 自动缩放
-        if (config.isQuietPrint() && config.isAutoScaling()) {
-            // TODO: 2018/12/27 0027 17:55 静默打印 && 自动缩放
         }
 
     }
