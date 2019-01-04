@@ -128,7 +128,7 @@ public class PrintPlus {
             PrintClientServer.getInstance().onBeforePrint(uuid);
         }
         /*5.使用不显示applet打印对话框窗口*/
-        Optional<Result> print = this.print(true, clientConfig.getPrinterName());
+        Optional<Result> print = this.print(false, clientConfig.getPrinterName());
         /*打印后事件*/
         if (uuid != null && print.isPresent()) {
             PrintClientServer.getInstance().oneAfterPrint(uuid, print.get());

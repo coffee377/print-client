@@ -17,7 +17,7 @@ import java.io.InputStream;
 public class VersionUtils {
 
     public static String getVersion() {
-        InputStream resourceAsStream = VersionUtils.class.getResourceAsStream("build.txt");
+        InputStream resourceAsStream = VersionUtils.class.getResourceAsStream("/build.txt");
         String version = "v1.0.0";
         try {
             version = IOUtils.toString(resourceAsStream, "UTF-8");
