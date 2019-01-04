@@ -4,6 +4,7 @@ import com.fr.general.IOUtils;
 import com.fr.general.Inter;
 import com.fr.stable.CoreGraphHelper;
 import com.voc.print.socket.PrintClientServer;
+import com.voc.print.util.VersionUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.awt.*;
@@ -58,7 +59,7 @@ public class PrintTray {
     private void showTray() {
         if (SystemTray.isSupported()) {
             SystemTray systemTray = SystemTray.getSystemTray();
-            String trayIconName = MessageFormat.format(Inter.getLocText("printer.client.name"), "v1.1.1");
+            String trayIconName = MessageFormat.format(Inter.getLocText("printer.client.name"), VersionUtils.getVersion());
             PopupMenu popupMenu = new PopupMenu();
             MenuItem menuSetting = new MenuItem(Inter.getLocText("menu.setting"));
             menuSetting.addActionListener(e -> {
