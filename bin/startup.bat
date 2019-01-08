@@ -1,1 +1,1 @@
-..\jre\bin\java -Xms512m -Xmx1024m -cp ../lib/* -jar PrintPlus.jar
+..\jre\bin\java -Xms512m -Xmx1024m -cp ../lib/*;./* com.voc.print.plus.PrintClient
