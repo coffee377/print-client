@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <install4j version="6.1.2" transformSequenceNumber="5">
   <directoryPresets config="../build/dist" />
-  <application name="Print Plus" distributionSourceDir="" applicationId="1141-8780-9806-1482" mediaDir="../dist/instal4j6/${compiler:sys.version}" mediaFilePattern="${compiler:sys.fullName}_${compiler:sys.platform}_${compiler:sys.version}" compression="6" lzmaCompression="false" pack200Compression="false" excludeSignedFromPacking="true" commonExternalFiles="false" createMd5Sums="true" shrinkRuntime="true" shortName="PrintX" publisher="" publisherWeb="" version="1.1.3" allPathsRelative="true" backupOnSave="false" autoSave="false" convertDotsToUnderscores="true" macSignature="????" macVolumeId="99c2b524d18361a5" javaMinVersion="1.8" javaMaxVersion="1.8" allowBetaVM="false" jdkMode="runtimeJre" jdkName="">
+  <application name="Print Plus" distributionSourceDir="" applicationId="1141-8780-9806-1482" mediaDir="../dist/instal4j6/${compiler:sys.version}" mediaFilePattern="${compiler:sys.fullName}_${compiler:sys.platform}_${compiler:sys.version}" compression="6" lzmaCompression="false" pack200Compression="false" excludeSignedFromPacking="true" commonExternalFiles="false" createMd5Sums="true" shrinkRuntime="true" shortName="PrintX" publisher="" publisherWeb="" version="1.1.4" allPathsRelative="true" backupOnSave="false" autoSave="false" convertDotsToUnderscores="true" macSignature="????" macVolumeId="99c2b524d18361a5" javaMinVersion="1.8" javaMaxVersion="1.8" allowBetaVM="false" jdkMode="runtimeJre" jdkName="">
     <languages skipLanguageSelection="false" languageSelectionInPrincipalLanguage="false">
       <principalLanguage id="zh_CN" customLocalizationFile="../src/main/resources/com/voc/print/plus/locale/message_zh_CN.properties" />
       <additionalLanguages>
@@ -16,6 +16,7 @@
     </searchSequence>
     <variables>
       <variable name="configFile" value="config/PrintPlus.json" description="" category="" />
+      <variable name="bin" value="bin" description="" category="" />
     </variables>
     <mergedProjects />
     <codeSigning macEnabled="false" macPkcs12File="" windowsEnabled="false" windowsKeySource="pkcs12" windowsPvkFile="" windowsSpcFile="" windowsPkcs12File="" />
@@ -326,12 +327,12 @@
             </serializedBean>
             <condition />
             <validation />
-            <preActivation />
+            <preActivation>import com.voc.print.util.BatUtils;
+File binDir = new File(context.getInstallationDirectory(), context.getCompilerVariable("bin"));
+BatUtils.exec(binDir.getAbsolutePath(),"import.bat");</preActivation>
             <postActivation>//import com.voc.print.config.ClientConfig;
 //import com.voc.print.util.ConfigUtils;
 
-//读取配置文件
-//File configFile = new File(context.getInstallationDirectory(), context.getCompilerVariable("configFile"));
 //ClientConfig clientConfig = ConfigUtils.readFromFile(configFile);
 //设置是否代理
 //Boolean proxy = (Boolean) context.getVariable("proxy");
