@@ -26,6 +26,7 @@ public class PrintPlusConfiguration {
      * 配置文件路径
      */
     public static final String CONFIG_PRINT_PLUS_JSON = "../config/PrintPlus.json";
+    public static final String RUNNING_FLAG_FILE = "../PrintPlus";
     public static final File CONFIG_FILE = new File(CONFIG_PRINT_PLUS_JSON);
 
     /**

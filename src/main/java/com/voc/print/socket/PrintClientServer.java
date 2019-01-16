@@ -44,7 +44,6 @@ public class PrintClientServer {
 
     private SocketIOServer socketIOServer;
     private boolean start;
-
     private PrintClientServer() {
         BuildContext.setBuildFilePath("/com/fr/stable/build.properties");
         final Configuration configuration = new Configuration();
@@ -199,6 +198,7 @@ public class PrintClientServer {
         PrintTray instance = PrintTray.getInstance();
         /*配置文件实时监听*/
         PrintPlusConfiguration plusConfiguration = PrintPlusConfiguration.getInstance();
+        /*是否运行*/
         this.start = instance != null && plusConfiguration.listening();
     }
 
