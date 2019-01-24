@@ -1,13 +1,16 @@
+[升级日志](CHANGELOG.MD)
+=========
+
 打印客户端
 =========
 1 .下载列表
 
 | id | media file type | display name | media file path |
 |---|---|---|---|
-|36	|windows	|Windows 32bit	|Print_Plus_windows_1_1_1.exe|
-|30	|windows	|Windows 64bit	|Print_Plus_windows-x64_1_1_1.exe|
-|39	|windows	|Windows Archive 32bit	|Print_Plus_windows_1_1_1.zip|
-|34	|windows	|Windows Archive 64bit	|Print_Plus_windows-x64_1_1_1.zip|
+|36	|windows	|Windows 32bit	|Print_Plus_windows_1_1_4.exe|
+|30	|windows	|Windows 64bit	|Print_Plus_windows-x64_1_1_4.exe|
+|39	|windows	|Windows Archive 32bit	|Print_Plus_windows_1_1_4.zip|
+|34	|windows	|Windows Archive 64bit	|Print_Plus_windows-x64_1_1_4.zip|
 
 2. 配置文件 PrintPlus.json
 
